@@ -1,0 +1,6 @@
+e:\users\hesiris\documents\visual studio 2015\Projects\MSWordWriter\MSWordWriter\bin\Debug\MSWordWriter.exe.config
+e:\users\hesiris\documents\visual studio 2015\Projects\MSWordWriter\MSWordWriter\bin\Debug\MSWordWriter.exe
+e:\users\hesiris\documents\visual studio 2015\Projects\MSWordWriter\MSWordWriter\bin\Debug\MSWordWriter.pdb
+e:\users\hesiris\documents\visual studio 2015\Projects\MSWordWriter\MSWordWriter\obj\Debug\MSWordWriter.exe
+e:\users\hesiris\documents\visual studio 2015\Projects\MSWordWriter\MSWordWriter\obj\Debug\MSWordWriter.pdb
+e:\users\hesiris\documents\visual studio 2015\Projects\MSWordWriter\MSWordWriter\obj\Debug\MSWordWriter.csprojResolveAssemblyReference.cache

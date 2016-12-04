@@ -1,0 +1,1 @@
+Ez nem egy virus. Jo szorakozast. Olvassatok el mindent.

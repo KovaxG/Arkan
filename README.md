@@ -17,3 +17,5 @@ Véget ért az első kihívás, és megkezdődik a második. Normálisan lehetne
 Sok síkert mindenkinek, ha van kérdésetek... kérdezzetek.
 
 Nyertes: **TBA**
+
+---

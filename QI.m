@@ -1,49 +1,44 @@
-function [Q, h] = QI(model, gamma, e_qiter)
-%UNTITLED2 Summary of this function goes here
-%   Detailed explanation goes here
+function [Q, h] = QI(model, gamma, error)
+%QI Calculates the best policy(h) and Q using the "Q Iteration" method
+%   model - The model of the system
+%   gamma - The horizont of the control
+%   e     - Maximum error before stopping the iteration
+% Implemented by Kovacs Gyorgy
 
-n = prod(model.size); % The number of possible states
+n1 = model.size(1); % The number of possible states 1
+n2 = model.size(2); % The number of possible states 2
 m = length(model.U{1}); % The number of possible actions
-k = 0;
 
-Qo = zeros(n, m);
-Qchange = ones(n, m) * 999;
+Qo = zeros(n1, n2, m);
+Qchange = ones(n1, n2, m) * 999; % Random value to make the original error non null
+                                 % If MatLab had a do {} while(cond)
+                                 % structure, this would not be necessary
 
-% Because I want to go through all the states, using 
-% these functions I can convert from a number to an actual state
-% TODO Change Q, so that it has three dimensions instead of two.
-% After checking again, it seems like this was a stupid mistake, 
-% because Q should have a size of (5, 5, 4), not (25, 4)...
-getRow = @(x) floor(((x - 1) / 5) + 1);
-getCol = @(x) x - (5 * (getRow(x) - 1));
-getNum = @(x) (x(1) - 1)* 5 + x(2);
-
-while max(max(Qchange)) > e_qiter
-    Qn = zeros(n, m); % Initialize new Q
-    for x = 1:n
-        for u = 1:m
-            % Get reward and next state
-            [x2, r, final] = gridnav_mdp(model, [getCol(x); getRow(x)], u);
-            if 1 %~(x == getNum(x2))
-                % Skip if hit obstacle
-                Qn(x,u) = r + gamma * max(Qo(getNum(x2), :));
+while abs(max(max(max(Qchange)))) > error
+    Qn = zeros(n1, n2, m); % Initialize new Qn
+    for x1 = 1:n1
+        for x2 = 1:n2
+            for u = 1:m
+                % Get reward and next state
+                [xnew, r, ~] = gridnav_mdp(model, [x1; x2], u);
+                Qn(x1, x2, u) = r + gamma * max(Qo(xnew(1), xnew(2), :));
             end
         end
     end
-    %Qn
     
     Qchange = Qn - Qo; % Used to get the biggest change
     Qo = Qn; % The current value will be the old value
-    k = k + 1;
 end
 
 Q = Qn; % Output Q is assigned here
 
-% Get the optimal policy (hopefully)
-h = zeros(model.size);
-for i = 1:n
-    [val, ind] = max(Qn(i, :));
-    h(getCol(i), getRow(i)) = ind;
+% Get the optimal policy
+h = zeros(n1, n2);
+for x1 = 1:n1
+    for x2 = 1:n2
+        [~, ind] = max(Qn(x1, x2, :));
+        h(x1, x2) = ind;
+    end
 end
 
 end

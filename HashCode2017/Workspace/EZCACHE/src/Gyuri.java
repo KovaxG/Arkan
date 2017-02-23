@@ -23,18 +23,50 @@ public class Gyuri {
 			System.out.print(r.toString());
 			EndPoint endP = findEndPoint(r);
 			
+			if (endP == null) {
+				System.err.println("ASDFSAGS");
+				return;
+			}
+			
 			int minLag = 9999999;
+			Cache temp = null;
 			for (Pair<Cache, Integer> pair : endP.getChacheList()) {
 				Cache c = pair.getFirst();
 				int lag = pair.getSecond();
-				//if (c.getSize())
+				if (c.getSize() >= r.getVideo().getSize()) {
+					minLag = lag;
+					temp = c;
+				}
+			}
+			
+			if (temp != null) {
+				temp.setSize(temp.getSize() - r.getVideo().getSize());
+				temp.getVideos().add(r.getVideo());
 			}
 		}
-	}
+		
+		// Create a CacheList
+		List<Cache> cachelist = new ArrayList<Cache>();
+		for (EndPoint endp : Robert.endpoints) {
+			for (Pair<Cache, Integer> p : endp.getChacheList()) {
+				Cache c = p.getFirst();
+				if (!cachelist.contains(c)) {
+					cachelist.add(c);
+				}
+			}
+		}
+		
+		for (Cache c : cachelist) {
+			System.out.println(c.toString());
+		}
+	} // End of Main
 	
 	public static EndPoint findEndPoint(Request r) {
+		for (EndPoint ep : Robert.endpoints) {
+			if (ep.getRequestList().contains(r)) return ep;
+		}
 		return null;
-	}
+	} // End of findEndPoint
 	
 } // End of Class Gyuri
 
@@ -127,6 +159,18 @@ class Cache {
 
 	public void setVideos(ArrayList<Video> videos) {
 		this.videos = videos;
+	}
+	
+	public boolean equals(Object o) {
+		if (o == null) return false;
+		if (!(o instanceof Cache)) return false;
+		
+		Cache c = (Cache) o;
+		return this.id == c.getId();
+	}
+	
+	public String toString() {
+		return String.format("id: %d, # of vids: %d", id, videos.size());
 	}
 } // End of Cache
 

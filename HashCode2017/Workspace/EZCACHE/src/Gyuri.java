@@ -27,15 +27,18 @@ public class Gyuri {
 			for (Pair<Cache, Integer> pair : endP.getChacheList()) {
 				Cache c = pair.getFirst();
 				int lag = pair.getSecond();
-				if (c.getSize())
+				//if (c.getSize())
 			}
 		}
 	}
+	
+	public static EndPoint findEndPoint(Request r) {
+		return null;
+	}
+	
 } // End of Class Gyuri
 
-public static EndPoint findEndPoint(Request r) {
-	return null;
-}
+
 
 class Pair <T1,T2> {
 	private T1 first;

@@ -6,7 +6,7 @@ import java.util.Scanner;
 public class Robert {
 	public static ArrayList<Video> videos = new ArrayList<Video>();
 	public static ArrayList<Cache> caches = new ArrayList<Cache>();
-	public static ArrayList<Request> requests = new ArrayList<Request>();
+	//public static ArrayList<Request> requests = new ArrayList<Request>();
 	public static ArrayList<EndPoint> endpoints = new ArrayList<EndPoint>();
 	DataCenter datacenter=null;
 	
@@ -35,13 +35,15 @@ public class Robert {
 			endpointCount  = sc.nextInt();
 			requestDesctriptionCount  = sc.nextInt();
 			cacheCount = sc.nextInt();
+			cacheSize = sc.nextInt();
+			
 			for (int i = 0; i < cacheCount; i++) {
 				Cache c =new Cache();
+				c.setSize(cacheSize);
 				c.setId(i);
 				caches.add(c);
 			}
-			cacheSize = sc.nextInt();
-			Cache.setSize(cacheSize);
+			//Cache.setSize(cacheSize);
 			
 			//System.out.println(videoCount + "; " + endpointCount + "; " + requestDesctriptionCount + "; " + cacheCount + "; " + cacheSize);
 			///section 1 - vidoesizez
@@ -72,6 +74,21 @@ public class Robert {
 			}
 			
 			///section 3 - video requests
+			
+			for (int i = 0; i < requestDesctriptionCount; i++) {
+				int videoID = sc.nextInt();
+				int endpointID = sc.nextInt();
+				int demand = sc.nextInt();
+				
+				Request request = new Request();
+				request.setDemand(demand);
+				request.setVideo(videos.get(videoID));
+				endpoints.get(endpointID).getRequestList().add(request);
+				
+				
+			}
+			
+			///close file
 			sc.close();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

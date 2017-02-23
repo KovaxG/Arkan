@@ -35,13 +35,15 @@ public class Robert {
 			endpointCount  = sc.nextInt();
 			requestDesctriptionCount  = sc.nextInt();
 			cacheCount = sc.nextInt();
+			cacheSize = sc.nextInt();
+			
 			for (int i = 0; i < cacheCount; i++) {
 				Cache c =new Cache();
+				c.setSize(cacheSize);
 				c.setId(i);
 				caches.add(c);
 			}
-			cacheSize = sc.nextInt();
-			Cache.setSize(cacheSize);
+			//Cache.setSize(cacheSize);
 			
 			//System.out.println(videoCount + "; " + endpointCount + "; " + requestDesctriptionCount + "; " + cacheCount + "; " + cacheSize);
 			///section 1 - vidoesizez

@@ -13,6 +13,7 @@ public class Robert {
 	public static void main(String[] args) {
 		
 		Parse();
+		
 	}
 	
 	static int videoCount;
@@ -67,8 +68,10 @@ public class Robert {
 					System.out.println("to Cache " + toCacheNr + " with Latency: " + toCacheLatency);
 					ep.getChacheList().add(new Pair<Cache,Integer>(caches.get(toCacheNr),toCacheLatency));
 				}
+				endpoints.add(ep);
 			}
 			
+			///section 3 - video requests
 			sc.close();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

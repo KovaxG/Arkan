@@ -7,6 +7,9 @@ public class Gyuri {
 		
 		Robert.Parse();
 		
+		System.out.println("Parsing Finished");
+		System.out.println("Creating List of Requests");
+		
 		// Create an arrayList with all the requests
 		List<Request> allRequests = new ArrayList<Request>();
 		for (EndPoint ep : Robert.endpoints) {
@@ -15,16 +18,18 @@ public class Gyuri {
 			}
 		}
 		
+		System.out.println("Starting Sort.");
+		
 		// Sort the list using the demand field
 		Collections.sort(allRequests, (o1, o2) -> o1.compareTo(o2));
 		
+		System.out.println("This will take forever");
+		
 		// Go through all requests
 		for (Request r : allRequests) {
-			System.out.print(r.toString());
 			EndPoint endP = findEndPoint(r);
 			
 			if (endP == null) {
-				System.err.println("ASDFSAGS");
 				return;
 			}
 			
@@ -33,7 +38,7 @@ public class Gyuri {
 			for (Pair<Cache, Integer> pair : endP.getChacheList()) {
 				Cache c = pair.getFirst();
 				int lag = pair.getSecond();
-				if (c.getSize() >= r.getVideo().getSize()) {
+				if (c.getSize() >= r.getVideo().getSize() && !c.getVideos().contains(r.getVideo())) {
 					minLag = lag;
 					temp = c;
 				}
@@ -57,8 +62,11 @@ public class Gyuri {
 		}
 		
 		for (Cache c : cachelist) {
-			System.out.println(c.toString());
 		}
+		
+		System.out.println("asda");
+		
+		Robert.WriteResults();
 	} // End of Main
 	
 	public static EndPoint findEndPoint(Request r) {

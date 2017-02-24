@@ -44,7 +44,7 @@ public class Robert {
 			cacheSize = sc.nextInt();
 			
 			for (int i = 0; i < cacheCount; i++) {
-				Cache c =new Cache();
+				Cache c = new Cache();
 				c.setSize(cacheSize);
 				c.setId(i);
 				caches.add(c);
@@ -102,17 +102,17 @@ public class Robert {
 		}
 	}
 	
-	public static void WriteResults(){
+	public static void WriteResults(ArrayList<Cache> caches){
+		
 		BufferedWriter wr;
 		try {
 			wr = new BufferedWriter(new FileWriter(outputFile));
 			int empty = 0;
 			for (Cache c:caches){
-				if (c.getVideos().isEmpty())
-					empty++;
+				if (c.getVideos().isEmpty()) empty++;
 			}
 			
-			wr.write("" + (cacheCount - empty));
+			wr.write("" + (caches.size() - empty));
 			
 			for (Cache c:caches){
 				if (!c.getVideos().isEmpty()){
@@ -123,6 +123,7 @@ public class Robert {
 				}
 			}
 			wr.flush();
+			wr.close();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

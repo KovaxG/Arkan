@@ -5,6 +5,9 @@ import java.util.List;
 public class Gyuri {
 	public static void main(String args[]) {
 		
+		Robert.inputFile = "inputs/kittens.in";
+		Robert.outputFile = "outputs/kittens.txt";
+		
 		Robert.Parse();
 		
 		System.out.println("Parsing Finished");
@@ -50,6 +53,8 @@ public class Gyuri {
 			}
 		}
 		
+		System.out.println("Creating cachelist.");
+		
 		// Create a CacheList
 		List<Cache> cachelist = new ArrayList<Cache>();
 		for (EndPoint endp : Robert.endpoints) {
@@ -61,12 +66,11 @@ public class Gyuri {
 			}
 		}
 		
-		for (Cache c : cachelist) {
-		}
-		
-		System.out.println("asda");
+		System.out.println("Writing results.");
 		
 		Robert.WriteResults();
+		
+		System.out.println("Program Finished.");
 	} // End of Main
 	
 	public static EndPoint findEndPoint(Request r) {
@@ -209,7 +213,7 @@ class Request {
 	}
 	
 	public int compareTo(Request r) {
-		return this.demand - r.getDemand();
+		return - this.demand + r.getDemand();
 	}
 	
 	public String toString() {

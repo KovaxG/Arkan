@@ -1,5 +1,8 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -9,6 +12,9 @@ public class Robert {
 	//public static ArrayList<Request> requests = new ArrayList<Request>();
 	public static ArrayList<EndPoint> endpoints = new ArrayList<EndPoint>();
 	DataCenter datacenter=null;
+	
+	public static String inputFile = "inputs/me_at_the_zoo.in";
+	public static String outputFile = "outputs/zoo_out.txt";
 	
 	public static void main(String[] args) {
 		
@@ -26,10 +32,10 @@ public class Robert {
 		
 		BufferedReader br;
 		try {
-			br = new BufferedReader(new FileReader("me_at_the_zoo.in"));
+			//br = new BufferedReader(new FileReader("me_at_the_zoo.in"));
 			
-			String line = br.readLine();
-			Scanner sc = new Scanner(new FileReader("me_at_the_zoo.in"));
+			//String line = br.readLine();
+			Scanner sc = new Scanner(new FileReader(inputFile));
 			
 			videoCount = sc.nextInt();
 			endpointCount  = sc.nextInt();
@@ -45,11 +51,11 @@ public class Robert {
 			}
 			//Cache.setSize(cacheSize);
 			
-			//System.out.println(videoCount + "; " + endpointCount + "; " + requestDesctriptionCount + "; " + cacheCount + "; " + cacheSize);
+			////System.out.println(videoCount + "; " + endpointCount + "; " + requestDesctriptionCount + "; " + cacheCount + "; " + cacheSize);
 			///section 1 - vidoesizez
 			for (int i = 0; i < videoCount; i++) {
 				videos.add(new Video(i, sc.nextInt()));
-				//System.out.println(videos.get(videos.size()-1).getSize());
+				////System.out.println(videos.get(videos.size()-1).getSize());
 			}
 			
 			///sectiion 2 - endpoint latencies
@@ -57,17 +63,17 @@ public class Robert {
 				EndPoint ep = new EndPoint();
 				ep.setId(i);
 				ep.setDataCenterLatency(sc.nextInt());
-				System.out.println("Endpoint: " + i);
-				System.out.println("DatacenterLatancy: " + ep.getDataCenterLatency());
+				////System.out.println("Endpoint: " + i);
+				////System.out.println("DatacenterLatancy: " + ep.getDataCenterLatency());
 				///connected to n caches
 				
 				int m = sc.nextInt();
-				System.out.println("Connected to " + m + " caches");
+				//System.out.println("Connected to " + m + " caches");
 				for (int j=0; j < m; j++){
 					int toCacheNr = sc.nextInt();
 					int toCacheLatency = sc.nextInt();
 					
-					System.out.println("to Cache " + toCacheNr + " with Latency: " + toCacheLatency);
+					//System.out.println("to Cache " + toCacheNr + " with Latency: " + toCacheLatency);
 					ep.getChacheList().add(new Pair<Cache,Integer>(caches.get(toCacheNr),toCacheLatency));
 				}
 				endpoints.add(ep);
@@ -94,5 +100,35 @@ public class Robert {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public static void WriteResults(){
+		BufferedWriter wr;
+		try {
+			wr = new BufferedWriter(new FileWriter(outputFile));
+			int empty = 0;
+			for (Cache c:caches){
+				if (c.getVideos().isEmpty())
+					empty++;
+			}
+			
+			wr.write("" + (cacheCount - empty));
+			
+			for (Cache c:caches){
+				if (!c.getVideos().isEmpty()){
+					wr.write("\r\n" + String.valueOf(c.getId()));
+					for (Video v:c.getVideos()){
+						wr.write(" " + String.valueOf(v.getId()));
+					}
+				}
+			}
+			wr.flush();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		
 	}
 }

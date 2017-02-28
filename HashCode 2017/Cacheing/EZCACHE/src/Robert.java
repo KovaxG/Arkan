@@ -28,6 +28,25 @@ public class Robert {
 	static int cacheCount;
 	static int cacheSize;
 	
+	
+	public static void init(String fileNameWithoutExtension){
+		Robert.videos = new ArrayList<Video>();
+		Robert.caches = new ArrayList<Cache>();
+		Robert.endpoints = new ArrayList<EndPoint>();
+
+		Robert.videoCount = 0;
+		Robert.endpointCount = 0;
+		Robert.requestDesctriptionCount = 0;
+		Robert.cacheCount = 0;
+		Robert.cacheSize = 0;
+
+		System.err.println("Starting " + fileNameWithoutExtension);
+
+		Robert.inputFile = "inputs/" + fileNameWithoutExtension + ".in";
+		Robert.outputFile = "outputs/" + fileNameWithoutExtension + ".txt";
+		
+	}
+	
 	public static void Parse(){
 		
 		BufferedReader br;

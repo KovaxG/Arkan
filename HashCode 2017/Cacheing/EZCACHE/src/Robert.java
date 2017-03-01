@@ -3,8 +3,12 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.Writer;
+import java.nio.channels.ScatteringByteChannel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Scanner;
+
+
 
 public class Robert {
 	public ArrayList<Video> videos = new ArrayList<Video>();
@@ -17,8 +21,9 @@ public class Robert {
 	public String outputFile = "outputs/zoo_out.txt";
 	
 	public static void main(String[] args) {
-		Robert robert = new Robert("me_at_the_zoo");
-		robert.Parse();
+		/*Robert robert = new Robert("me_at_the_zoo");
+		robert.Parse();*/
+		Gyuri.main(args);
 		
 	}
 	
@@ -28,6 +33,7 @@ public class Robert {
 	int cacheCount;
 	int cacheSize;
 	
+	String filename;
 	
 	public Robert(String fileNameWithoutExtension){
 		this.videos = new ArrayList<Video>();
@@ -40,6 +46,8 @@ public class Robert {
 		this.cacheCount = 0;
 		this.cacheSize = 0;
 
+		this.filename = fileNameWithoutExtension;
+		
 		System.err.println("Starting " + fileNameWithoutExtension);
 
 		this.inputFile = "inputs/" + fileNameWithoutExtension + ".in";
@@ -120,7 +128,161 @@ public class Robert {
 			e.printStackTrace();
 		}
 	}
+	///aux calss for sort
 	
+	class videosWithScore implements Comparable<videosWithScore>{
+		Video video;
+		int score;
+		public videosWithScore(Video video, int score) {
+			super();
+			this.video = video;
+			this.score = score;
+		}
+		
+		public Video getVideo() {
+			return video;
+		}
+		public int getScore() {
+			return score;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + getOuterType().hashCode();
+			result = prime * result + ((video == null) ? 0 : video.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			videosWithScore other = (videosWithScore) obj;
+			if (!getOuterType().equals(other.getOuterType()))
+				return false;
+			if (video == null) {
+				if (other.video != null)
+					return false;
+			} else if (!video.equals(other.video))
+				return false;
+			return true;
+		}
+
+		private Robert getOuterType() {
+			return Robert.this;
+		}
+
+		@Override
+		///inverted sort
+		public int compareTo(videosWithScore o) {
+			return o.getScore()-this.getScore();
+		}
+		
+		
+		
+	}
+	
+	public void sort(){
+		///each cache is independent, so maybe this can be parallelized
+		System.out.println(filename + ": Starting sort");
+		int progress = 0;
+		int progressPercentage = 0, progressPercentageOld = 0;
+		for (Cache cache : caches){
+			///keep track of progress;
+			progressPercentage = progress * 100  / cacheCount; 
+			if (progressPercentage> progressPercentageOld)
+			System.out.println(filename + ": Progress: " +progressPercentage + "%");
+			progress++;
+			progressPercentageOld = progressPercentage;
+			
+			//find endpoints wich have this cache as lowest latency option
+			ArrayList<Pair<EndPoint,Integer>> bestEndPoints = new ArrayList<Pair<EndPoint,Integer>>();
+			for (EndPoint e : endpoints){
+				/// sort to ascending order, by cache latency
+				Collections.sort(e.getChacheList(),(o1, o2) ->  o1.getSecond()-o2.getSecond());
+				
+				//im not sure if this is actually faster or slower(using a temp var)
+				///if it is first option, add it to selection and delete it(this cache will not be visited again)
+				ArrayList<Pair<Cache,Integer>> EPCacheList = e.getChacheList();
+				if (!EPCacheList.isEmpty() && EPCacheList.get(0).getFirst().equals(cache)){
+					bestEndPoints.add(new Pair<EndPoint, Integer>(e,EPCacheList.get(0).getSecond()));
+					EPCacheList.remove(0);
+				}
+			}
+			
+			///construct a list with the videos and afferent scores from the endpoints selected 
+			ArrayList<videosWithScore> videosWithScores  = new ArrayList<videosWithScore>();
+			for (Pair<EndPoint,Integer> e: bestEndPoints){
+				for (Request request : e.getFirst().getRequestList()){
+
+					int DL = e.getFirst().getDataCenterLatency();
+					int L = e.getSecond();
+					int score = request.getDemand()*(DL - L);
+					Video video = request.getVideo();
+					
+					if (videosWithScores.contains(video)){
+						int index = videosWithScores.indexOf(video);
+						if (videosWithScores.get(index).getScore()<score){
+							videosWithScores.remove(index);
+							videosWithScores.add(new videosWithScore(video, score));
+						}
+					}
+					else{
+						videosWithScores.add(new videosWithScore(video, score));
+					}
+				}
+			}
+			
+			//sorted in descending order
+			Collections.sort(videosWithScores);
+			
+			// Select the best videos to put in
+			// TODO write code for replaceing already insered videos, for a better combination
+			for (videosWithScore vScore : videosWithScores){
+				if (vScore.video.getSize() < cache.getSize()){
+					cache.getVideos().add(vScore.video);
+					cache.setSize(cache.getSize()-vScore.video.getSize());
+
+					///remove all requests that contain videos that have been inserted into the cache
+					for (EndPoint e : endpoints){
+						//while(e.getRequestList().remove(new Request(vScore.video,0)));
+						for (Request r: e.getRequestList()){
+							if (r.getVideo().equals(vScore.video)){
+								//TODO fix this
+								//e.getRequestList().remove(r);
+							}
+						}
+					}
+				}
+				else{
+					break;
+				}
+			}
+			
+			
+			
+		}
+	}
+	/*Pair<ArrayList<Video>,ArrayList<Integer>> videosWithScores = new Pair<ArrayList<Video>,ArrayList<Integer>>(new ArrayList<Video>(),new ArrayList<Integer>()); //ArrayList<Pair<Video,Integer>>();
+			for (Pair<EndPoint,Integer >e: bestEndPoints){
+				for (Request request : e.getFirst().getRequestList()){
+					if (videosWithScores.getFirst().contains(request)){
+						
+					}
+					else{
+						videosWithScores.getFirst().add(request.getVideo());
+						int DL = e.getFirst().getDataCenterLatency();
+						int L = e.getSecond();
+						videosWithScores.getSecond().add(request.getDemand()*(DL - L));
+					}
+				}
+			}*/
 	public void WriteResults(ArrayList<Cache> caches){
 		
 		BufferedWriter wr;

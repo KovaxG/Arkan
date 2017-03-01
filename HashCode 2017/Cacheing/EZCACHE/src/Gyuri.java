@@ -22,7 +22,8 @@ public class Gyuri {
 
 			Thread sorthread = new Thread(new Runnable() {
 				public void run() {
-					Gyuri.sort(robert, file);
+					//Gyuri.sort(robert, file);
+					robert.sort();
 				}
 			});
 
@@ -65,7 +66,7 @@ public class Gyuri {
 
 	} // End of Main
 
-	public static void sort(Robert robert, String file) {
+	public void sort(Robert robert, String file) {
 
 		System.out.println(file + ": Creating List of Requests");
 
@@ -118,7 +119,7 @@ public class Gyuri {
 		}
 	}
 
-	public static void printCacheList(Robert robert) {
+	public  void printCacheList(Robert robert) {
 		System.out.println("Size: " + robert.caches.size());
 		for (Cache c : robert.caches) {
 			System.out.println(c.toString());
@@ -126,7 +127,7 @@ public class Gyuri {
 		System.out.println("\n\n");
 	}
 
-	public static EndPoint findEndPoint(Robert robert, Request r) {
+	public  EndPoint findEndPoint(Robert robert, Request r) {
 		for (EndPoint ep : robert.endpoints) {
 			if (ep.getRequestList().contains(r))
 				return ep;
@@ -135,8 +136,6 @@ public class Gyuri {
 	} // End of findEndPoint
 
 	/**
-	 * TODO this doesn't work. Fix.
-	 * 
 	 * @param endPoints
 	 * @return score
 	 */
@@ -144,7 +143,7 @@ public class Gyuri {
 		long totalTimeSaved = 0;
 		long totalRequests = 0;
 		
-		ArrayList<Pair<Video, Integer>> vidLatency = new ArrayList<Pair<Video, Integer>>();
+		//ArrayList<Pair<Video, Integer>> vidLatency = new ArrayList<Pair<Video, Integer>>();
 
 		for (EndPoint ep : endPoints) {
 			for (Request req : ep.getRequestList()) {
@@ -287,10 +286,20 @@ class Cache {
 	}
 } // End of Cache
 
-class Request {
+class Request implements Comparable<Request>{
 
 	private Video video;
 	private int demand;
+
+	public Request(){
+		super();
+	};
+	
+	public Request(Video video, int demand) {
+		super();
+		this.video = video;
+		this.demand = demand;
+	}
 
 	public Video getVideo() {
 		return video;
@@ -318,6 +327,7 @@ class Request {
 		return r.getVideo().equals(this.video) && r.getDemand() == this.demand;
 	}
 
+	@Override
 	public int compareTo(Request r) {
 		return -this.demand + r.getDemand();
 	}

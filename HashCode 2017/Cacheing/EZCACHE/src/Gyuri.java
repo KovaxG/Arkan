@@ -7,76 +7,89 @@ import javax.naming.ldap.SortControl;
 public class Gyuri {
 	public static void main(String args[]) {
 
-		String[] file = { "example", "me_at_the_zoo", "trending_today", "videos_worth_spreading", "kittens" };
+		String[] files = { "example", "me_at_the_zoo", "trending_today", "videos_worth_spreading", "kittens" };
 
-		for (int i = 0; i < file.length; i++) {
-
-			Robert.init(file[i]);
+		for (String file : files) {
+			Robert robert = new Robert(file);
 
 			long t0 = System.currentTimeMillis();
 
-			Robert.Parse();
+			robert.Parse();
 
 			// printCacheList();
 
-			System.out.println("Parsing Finished");
+			System.out.println(file + ": Parsing Finished");
 
-			Gyuri.sort();
-
-			System.out.println("Creating cachelist.");
-
-			
-			///Ez nincs sehol használva?
-			// Create a CacheList
-			/*ArrayList<Cache> cachelist = new ArrayList<Cache>();
-			for (EndPoint endp : Robert.endpoints) {
-				for (Pair<Cache, Integer> p : endp.getChacheList()) {
-					Cache c = p.getFirst();
-					if (!cachelist.contains(c)) {
-						cachelist.add(c);
-					}
+			Thread sorthread = new Thread(new Runnable() {
+				public void run() {
+					Gyuri.sort(robert, file);
 				}
-			}*/
+			});
 
-			System.out.println("Writing results.");
+			sorthread.start();
 
-			Robert.WriteResults(Robert.caches);
+			/// Ez nincs sehol használva?
+			/*
+			 * Create a CacheList
+			 * 
+			 * System.out.println("Creating cachelist.")
+			 * 
+			 * ArrayList<Cache> cachelist = new ArrayList<Cache>(); for
+			 * (EndPoint endp : Robert.endpoints) { for (Pair<Cache, Integer> p
+			 * : endp.getChacheList()) { Cache c = p.getFirst(); if
+			 * (!cachelist.contains(c)) { cachelist.add(c); } } }
+			 */
 
-			System.out.println("Program Finished.");
+			new Thread(new Runnable() {
+				public void run() {
+					try {
+						sorthread.join();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 
-			long t1 = System.currentTimeMillis();
+					System.out.println(file + ": Writing results.");
 
-			System.out.println("Completed in: " + (t1 - t0) + " ms");
+					robert.WriteResults(robert.caches);
 
-			System.out.println("Score: " + calculateScore(Robert.endpoints));
+					System.out.println(file + ": Program Finished.");
+
+					long t1 = System.currentTimeMillis();
+
+					System.err.println(file + ": Completed in: " + (t1 - t0) + " ms");
+
+					System.err.println(file + ": Score: " + calculateScore(robert.endpoints));
+				}
+			}).start();
 		}
+
 	} // End of Main
 
-	public static void sort() {
+	public static void sort(Robert robert, String file) {
 
-		System.out.println("Creating List of Requests");
+		System.out.println(file + ": Creating List of Requests");
 
 		// Create an arrayList with all the requests
 		List<Request> allRequests = new ArrayList<Request>();
-		for (EndPoint ep : Robert.endpoints) {
+		for (EndPoint ep : robert.endpoints) {
 			for (Request req : ep.getRequestList()) {
 				allRequests.add(req);
 			}
 		}
 
-		System.out.println("Starting Sort.");
+		System.out.println(file + ": Starting Sort.");
 
 		// Sort the list using the demand field
 		Collections.sort(allRequests, (o1, o2) -> o1.compareTo(o2));
 
-		System.out.println("This will take forever");
+		System.out.println(file + ": This will take forever");
 
 		// Go through all requests
 		for (Request r : allRequests) {
-			EndPoint endP = findEndPoint(r);
+			EndPoint endP = findEndPoint(robert, r);
 
 			if (endP == null) {
-				System.err.println("endPoint == null");
+				System.err.println(file + ":endPoint == null");
 				return;
 			}
 
@@ -105,16 +118,16 @@ public class Gyuri {
 		}
 	}
 
-	public static void printCacheList() {
-		System.out.println("Size: " + Robert.caches.size());
-		for (Cache c : Robert.caches) {
+	public static void printCacheList(Robert robert) {
+		System.out.println("Size: " + robert.caches.size());
+		for (Cache c : robert.caches) {
 			System.out.println(c.toString());
 		}
 		System.out.println("\n\n");
 	}
 
-	public static EndPoint findEndPoint(Request r) {
-		for (EndPoint ep : Robert.endpoints) {
+	public static EndPoint findEndPoint(Robert robert, Request r) {
+		for (EndPoint ep : robert.endpoints) {
 			if (ep.getRequestList().contains(r))
 				return ep;
 		}
@@ -128,8 +141,8 @@ public class Gyuri {
 	 * @return score
 	 */
 	public static int calculateScore(ArrayList<EndPoint> endPoints) {
-		int totalTimeSaved = 0;
-		int totalRequests = 0;
+		long totalTimeSaved = 0;
+		long totalRequests = 0;
 
 		for (EndPoint ep : endPoints) {
 			for (Request req : ep.getRequestList()) {
@@ -146,8 +159,7 @@ public class Gyuri {
 				}
 			}
 		}
-
-		return totalTimeSaved / totalRequests * 1000;
+		return (int)( totalTimeSaved * 1000.0 / totalRequests);
 	} // End of calculateScore
 
 } // End of Class Gyuri

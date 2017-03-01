@@ -7,47 +7,47 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Robert {
-	public static ArrayList<Video> videos = new ArrayList<Video>();
-	public static ArrayList<Cache> caches = new ArrayList<Cache>();
+	public ArrayList<Video> videos = new ArrayList<Video>();
+	public ArrayList<Cache> caches = new ArrayList<Cache>();
 	//public static ArrayList<Request> requests = new ArrayList<Request>();
-	public static ArrayList<EndPoint> endpoints = new ArrayList<EndPoint>();
+	public ArrayList<EndPoint> endpoints = new ArrayList<EndPoint>();
 	DataCenter datacenter=null;
 	
-	public static String inputFile = "inputs/me_at_the_zoo.in";
-	public static String outputFile = "outputs/zoo_out.txt";
+	public String inputFile = "inputs/me_at_the_zoo.in";
+	public String outputFile = "outputs/zoo_out.txt";
 	
 	public static void main(String[] args) {
-		
-		Parse();
+		Robert robert = new Robert("me_at_the_zoo");
+		robert.Parse();
 		
 	}
 	
-	static int videoCount;
-	static int endpointCount;
-	static int requestDesctriptionCount;
-	static int cacheCount;
-	static int cacheSize;
+	int videoCount;
+	int endpointCount;
+	int requestDesctriptionCount;
+	int cacheCount;
+	int cacheSize;
 	
 	
-	public static void init(String fileNameWithoutExtension){
-		Robert.videos = new ArrayList<Video>();
-		Robert.caches = new ArrayList<Cache>();
-		Robert.endpoints = new ArrayList<EndPoint>();
+	public Robert(String fileNameWithoutExtension){
+		this.videos = new ArrayList<Video>();
+		this.caches = new ArrayList<Cache>();
+		this.endpoints = new ArrayList<EndPoint>();
 
-		Robert.videoCount = 0;
-		Robert.endpointCount = 0;
-		Robert.requestDesctriptionCount = 0;
-		Robert.cacheCount = 0;
-		Robert.cacheSize = 0;
+		this.videoCount = 0;
+		this.endpointCount = 0;
+		this.requestDesctriptionCount = 0;
+		this.cacheCount = 0;
+		this.cacheSize = 0;
 
 		System.err.println("Starting " + fileNameWithoutExtension);
 
-		Robert.inputFile = "inputs/" + fileNameWithoutExtension + ".in";
-		Robert.outputFile = "outputs/" + fileNameWithoutExtension + ".txt";
+		this.inputFile = "inputs/" + fileNameWithoutExtension + ".in";
+		this.outputFile = "outputs/" + fileNameWithoutExtension + ".txt";
 		
 	}
 	
-	public static void Parse(){
+	public void Parse(){
 		
 		BufferedReader br;
 		try {
@@ -121,7 +121,7 @@ public class Robert {
 		}
 	}
 	
-	public static void WriteResults(ArrayList<Cache> caches){
+	public void WriteResults(ArrayList<Cache> caches){
 		
 		BufferedWriter wr;
 		try {

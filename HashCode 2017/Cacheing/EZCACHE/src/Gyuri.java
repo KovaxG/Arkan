@@ -143,9 +143,13 @@ public class Gyuri {
 	public static int calculateScore(ArrayList<EndPoint> endPoints) {
 		long totalTimeSaved = 0;
 		long totalRequests = 0;
+		
+		ArrayList<Pair<Video, Integer>> vidLatency = new ArrayList<Pair<Video, Integer>>();
 
 		for (EndPoint ep : endPoints) {
 			for (Request req : ep.getRequestList()) {
+				int minlag = ep.getDataCenterLatency();
+				
 				for (Pair<Cache, Integer> p : ep.getChacheList()) {
 					Cache c = p.getFirst();
 					int lag = p.getSecond();
@@ -153,10 +157,14 @@ public class Gyuri {
 					if (c.getVideos().contains(req.getVideo())) {
 						// System.out.println("" + (ep.getDataCenterLatency() -
 						// lag) + " " + req.getDemand());
-						totalTimeSaved += ((ep.getDataCenterLatency() - lag) * req.getDemand());
-						totalRequests = totalRequests + req.getDemand();
+						if (lag<minlag){
+							minlag = lag;
+						}
+							
 					}
 				}
+				totalTimeSaved += ((ep.getDataCenterLatency() - minlag) * req.getDemand());
+				totalRequests = totalRequests + req.getDemand();
 			}
 		}
 		return (int)( totalTimeSaved * 1000.0 / totalRequests);

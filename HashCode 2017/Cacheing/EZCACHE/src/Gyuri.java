@@ -59,7 +59,7 @@ public class Gyuri {
 
 					System.err.println(file + ": Completed in: " + (t1 - t0) + " ms");
 
-					System.err.println(file + ": Score: " + calculateScore(robert.endpoints));
+					System.err.println(file + ": Score: " + robert.calculateScore());
 				}
 			}).start();
 		}
@@ -168,6 +168,7 @@ public class Gyuri {
 		}
 		return (int)( totalTimeSaved * 1000.0 / totalRequests);
 	} // End of calculateScore
+	
 
 } // End of Class Gyuri
 

@@ -6,13 +6,13 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Scanner;
+
 
 public class Gyuri {
 	public static void main(String args[]) {
 
-		String[] files = { "example", "me_at_the_zoo", /* "trending_today", */ "videos_worth_spreading", "kittens" };
+		String[] files = { "example", "me_at_the_zoo", /* "trending_today", */ "videos_worth_spreading"/*, "kittens" */};
 		String logFile = "log.txt";
 
 		ArrayList<Result> results = new ArrayList<Result>();
@@ -345,6 +345,12 @@ class Video {
 	private int id;
 	private int size;
 
+	public Video(Video video) {
+		super();
+		this.id = video.id;
+		this.size = video.size;
+	}
+
 	public Video() {
 	}
 
@@ -385,7 +391,24 @@ class Cache {
 	private int id;
 	private int size;
 
-	ArrayList<Video> videos = new ArrayList<Video>();
+	ArrayList<Video> videos;
+	
+	
+	
+	public Cache() {
+		super();
+		videos = new ArrayList<Video>();
+	}
+
+	public Cache(Cache cache) {
+		super();
+		this.id = cache.id;
+		this.size = cache.size;
+		this.videos = new ArrayList<Video>();
+		for (Video video : cache.videos){
+			this.videos.add(new Video(video));
+		}
+	}
 
 	public int getId() {
 		return id;
@@ -430,6 +453,12 @@ class Request implements Comparable<Request> {
 
 	private Video video;
 	private int demand;
+	
+	public Request(Request request) {
+		super();
+		this.video = new Video(request.video);
+		this.demand = request.demand;
+	}
 
 	public Request() {
 		super();
@@ -480,9 +509,31 @@ class Request implements Comparable<Request> {
 class EndPoint {
 
 	private int id;
-	private ArrayList<Request> requestList = new ArrayList<Request>();
-	private ArrayList<Pair<Cache, Integer>> chacheList = new ArrayList<Pair<Cache, Integer>>();
+	private ArrayList<Request> requestList;
+	private ArrayList<Pair<Cache, Integer>> chacheList;
 	private int dataCenterLatency;
+
+	
+	
+	public EndPoint() {
+		super();
+		requestList = new ArrayList<Request>();
+		chacheList = new ArrayList<Pair<Cache, Integer>>();
+	}
+
+	public EndPoint(EndPoint endpoint) {
+		super();
+		this.id = endpoint.id;		
+		this.requestList = new  ArrayList<Request>();
+		for (Request request : endpoint.requestList){
+			this.requestList.add(new Request(request));
+		}
+		this.chacheList = new ArrayList<Pair<Cache, Integer>>();
+		for (Pair<Cache, Integer> cacheElement : endpoint.chacheList){
+			this.chacheList.add(new Pair<Cache, Integer>(new Cache(cacheElement.getFirst()), new Integer(cacheElement.getSecond().intValue())));
+		}
+		this.dataCenterLatency = endpoint.dataCenterLatency;
+	}
 
 	public int getId() {
 		return id;

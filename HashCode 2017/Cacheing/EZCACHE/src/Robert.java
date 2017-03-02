@@ -277,7 +277,7 @@ public class Robert {
 					}*/
 					for (int i=0; i<endpointCount; i++){
 						
-						if (endpointsOriginal.get(i).getChacheList().contains(cache)){
+						if (endpointsOriginal.get(i).containsCache(cache)){
 							endpoints.get(i).getRequestList().removeIf(r -> r.getVideo().equals(vScore.video));
 						}
 					}

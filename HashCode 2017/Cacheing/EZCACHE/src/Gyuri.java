@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
+import javax.swing.text.StyledEditorKit.ForegroundAction;
+
 public class Gyuri {
 	public static void main(String args[]) {
 
@@ -510,6 +512,8 @@ class EndPoint {
 
 	private int id;
 	private ArrayList<Request> requestList;
+	
+	///TODO this name is misleading. It should be cacheAndLatencyList or stgh. Also mispelled
 	private ArrayList<Pair<Cache, Integer>> chacheList;
 	private int dataCenterLatency;
 
@@ -532,6 +536,14 @@ class EndPoint {
 					new Integer(cacheElement.getSecond().intValue())));
 		}
 		this.dataCenterLatency = endpoint.dataCenterLatency;
+	}
+	
+	public boolean containsCache(Cache cache){
+		for (Pair<Cache,Integer> cachePair : chacheList){
+			if (cachePair.getFirst().equals(cache))
+				return true;
+		}
+		return false;
 	}
 
 	public int getId() {

@@ -271,9 +271,15 @@ public class Robert {
 					/// remove all requests that contain videos that have
 					/// been
 					/// inserted into the cache
-					for (EndPoint e : endpoints) {
+					/*for (EndPoint e : endpoints) {
+					
+					e.getRequestList().removeIf(r -> r.getVideo().equals(vScore.video));
+					}*/
+					for (int i=0; i<endpointCount; i++){
 						
-						e.getRequestList().removeIf(r -> r.getVideo().equals(vScore.video));
+						if (endpointsOriginal.get(i).getChacheList().contains(cache)){
+							endpoints.get(i).getRequestList().removeIf(r -> r.getVideo().equals(vScore.video));
+						}
 					}
 				} else {
 					break;

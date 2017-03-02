@@ -1,13 +1,21 @@
+
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import javax.naming.ldap.SortControl;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
 
 public class Gyuri {
 	public static void main(String args[]) {
 
-		String[] files = { "example", "me_at_the_zoo", "trending_today", "videos_worth_spreading", "kittens" };
+		String[] files = { "example", "me_at_the_zoo", /* "trending_today", */ "videos_worth_spreading", "kittens" };
+		String logFile = "log.txt";
+
+		ArrayList<Result> results = new ArrayList<Result>();
 
 		for (String file : files) {
 			Robert robert = new Robert(file);
@@ -22,7 +30,7 @@ public class Gyuri {
 
 			Thread sorthread = new Thread(new Runnable() {
 				public void run() {
-					//Gyuri.sort(robert, file);
+					// Gyuri.sort(robert, file);
 					robert.sort();
 				}
 			});
@@ -57,11 +65,142 @@ public class Gyuri {
 
 					long t1 = System.currentTimeMillis();
 
-					System.err.println(file + ": Completed in: " + (t1 - t0) + " ms");
+					int score = robert.calculateScore();
+					/// due to java optimizing code in the background this is
+					/// not really accurate
+					long time = t1 - t0;
 
-					System.err.println(file + ": Score: " + robert.calculateScore());
+					synchronized (results) {
+						results.add(new Result(file, score, time));
+					}
+
+					System.err.println(file + ": Completed in: " + time + " ms");
+
+					System.err.println(file + ": Score: " + score);
 				}
 			}).start();
+		}
+
+		/// TODO maybe this should have its separate method of methods.
+		boolean equal = false;
+
+		while (!equal) {
+			synchronized (results) {
+				if (results.size() == files.length)
+					equal = true;
+			}
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
+		if (results.size() == files.length) {
+			RandomAccessFile raf;
+			BufferedWriter wr;
+			Scanner sc;
+
+			try {
+				/// update number of entries in file;
+				raf = new RandomAccessFile(logFile, "rw");
+				raf.seek(0);
+				int n = raf.read();
+				raf.close();
+
+				/// read last entry
+				ArrayList<Result> resultsLast = new ArrayList<Result>();
+				if (n >= 1) {
+					sc = new Scanner(new FileReader(logFile));
+
+					// skip the size line
+					String s = sc.nextLine();
+
+					int i = 0;
+					while (i < n - 1) {
+						s = sc.nextLine();
+						if (s.getBytes()[0] == 14)
+							i++;
+					}
+
+					String line = "::";
+					String[] elements;
+
+					for (int j = 0; j < files.length; j++) {
+						if (sc.hasNextLine()){
+							line = sc.nextLine();
+						
+							if (line.getBytes()[0] == 14) {
+								break;
+							} else {
+								elements = line.split(":");
+								resultsLast.add(new Result(elements[0], Integer.parseInt(elements[1]),
+										Long.parseLong(elements[2])));
+							}
+						}
+					}
+					sc.close();
+				}
+
+				/// append new results
+				wr = new BufferedWriter(new FileWriter(logFile, true));
+				wr.write(14);// 'new page'
+				wr.newLine();
+
+				for (int j = 0; j < files.length; j++) {
+					Result result = null;
+					for (Result r : results) {
+						if (r.getFile().equals(files[j])) {
+							result = r;
+							break;
+						}
+					}
+
+					if (result != null) {
+						wr.write(result.getFile() + ":" + result.getScore() + ":" + result.getTime());
+						wr.newLine();
+					}
+				}
+
+				wr.flush();
+				wr.close();
+
+				// update entries value
+				raf = new RandomAccessFile(logFile, "rw");
+				raf.seek(0);
+				if (n == -1) {
+					raf.write(1);
+					raf.write('\r');
+					raf.write('\n');
+					System.out.println("Created log file. No former results to compare to");
+				} else
+					raf.write(n + 1);
+				raf.close();
+
+				/// compare last and current results
+				if (n >= 1) {
+					System.out.println("");
+					System.out.println("Improvements (e.g. 150 means current=last+150):");
+					for (Result currentResult : results) {
+						for (Result lastResult : resultsLast) {
+							if (currentResult.getFile().equals(lastResult.getFile())) {
+								System.out.println(currentResult.getFile() + ":");
+								System.out.println("     Score(+ => better): "
+										+ (currentResult.getScore() - lastResult.getScore()));
+								System.out.println(
+										"     Time(- => better): " + (currentResult.getTime() - lastResult.getTime()));
+
+								break;
+							}
+						}
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+		} else {
+			System.err.println("Error occured, data corrupted, no logging done");
 		}
 
 	} // End of Main
@@ -119,7 +258,7 @@ public class Gyuri {
 		}
 	}
 
-	public  void printCacheList(Robert robert) {
+	public void printCacheList(Robert robert) {
 		System.out.println("Size: " + robert.caches.size());
 		for (Cache c : robert.caches) {
 			System.out.println(c.toString());
@@ -127,7 +266,7 @@ public class Gyuri {
 		System.out.println("\n\n");
 	}
 
-	public  EndPoint findEndPoint(Robert robert, Request r) {
+	public EndPoint findEndPoint(Robert robert, Request r) {
 		for (EndPoint ep : robert.endpoints) {
 			if (ep.getRequestList().contains(r))
 				return ep;
@@ -142,13 +281,14 @@ public class Gyuri {
 	public static int calculateScore(ArrayList<EndPoint> endPoints) {
 		long totalTimeSaved = 0;
 		long totalRequests = 0;
-		
-		//ArrayList<Pair<Video, Integer>> vidLatency = new ArrayList<Pair<Video, Integer>>();
+
+		// ArrayList<Pair<Video, Integer>> vidLatency = new
+		// ArrayList<Pair<Video, Integer>>();
 
 		for (EndPoint ep : endPoints) {
 			for (Request req : ep.getRequestList()) {
 				int minlag = ep.getDataCenterLatency();
-				
+
 				for (Pair<Cache, Integer> p : ep.getChacheList()) {
 					Cache c = p.getFirst();
 					int lag = p.getSecond();
@@ -156,19 +296,18 @@ public class Gyuri {
 					if (c.getVideos().contains(req.getVideo())) {
 						// System.out.println("" + (ep.getDataCenterLatency() -
 						// lag) + " " + req.getDemand());
-						if (lag<minlag){
+						if (lag < minlag) {
 							minlag = lag;
 						}
-							
+
 					}
 				}
 				totalTimeSaved += ((ep.getDataCenterLatency() - minlag) * req.getDemand());
 				totalRequests = totalRequests + req.getDemand();
 			}
 		}
-		return (int)( totalTimeSaved * 1000.0 / totalRequests);
+		return (int) (totalTimeSaved * 1000.0 / totalRequests);
 	} // End of calculateScore
-	
 
 } // End of Class Gyuri
 
@@ -287,15 +426,15 @@ class Cache {
 	}
 } // End of Cache
 
-class Request implements Comparable<Request>{
+class Request implements Comparable<Request> {
 
 	private Video video;
 	private int demand;
 
-	public Request(){
+	public Request() {
 		super();
 	};
-	
+
 	public Request(Video video, int demand) {
 		super();
 		this.video = video;
@@ -378,15 +517,54 @@ class EndPoint {
 	}
 } // End of EndPoint
 
-class DataCenter {
+class Result {
+	String file;
+	int score;
+	long time;
 
-	private ArrayList<Video> videoList = new ArrayList<Video>();
-
-	public ArrayList<Video> getVideoList() {
-		return videoList;
+	public Result(String file) {
+		super();
+		this.file = file;
 	}
 
-	public void setVideoList(ArrayList<Video> videoList) {
-		this.videoList = videoList;
+	public Result(String file, int score, long time) {
+		super();
+		this.time = time;
+		this.score = score;
+		this.file = file;
 	}
-} // End of DataCenter
+
+	public long getTime() {
+		return time;
+	}
+
+	public void setTime(long time) {
+		this.time = time;
+	}
+
+	public int getScore() {
+		return score;
+	}
+
+	public void setScore(int score) {
+		this.score = score;
+	}
+
+	public String getFile() {
+		return file;
+	}
+
+	public void setFile(String file) {
+		this.file = file;
+	}
+}
+/*
+ * class DataCenter {
+ * 
+ * private ArrayList<Video> videoList = new ArrayList<Video>();
+ * 
+ * public ArrayList<Video> getVideoList() { return videoList; }
+ * 
+ * public void setVideoList(ArrayList<Video> videoList) { this.videoList =
+ * videoList; } }
+ */// End of DataCenter

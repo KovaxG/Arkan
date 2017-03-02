@@ -8,11 +8,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
-
 public class Gyuri {
 	public static void main(String args[]) {
 
-		String[] files = { "example", "me_at_the_zoo", /* "trending_today", */ "videos_worth_spreading"/*, "kittens" */};
+		String[] files = { "example", "me_at_the_zoo", "trending_today", "videos_worth_spreading", "kittens" };
 		String logFile = "log.txt";
 
 		ArrayList<Result> results = new ArrayList<Result>();
@@ -127,9 +126,9 @@ public class Gyuri {
 					String[] elements;
 
 					for (int j = 0; j < files.length; j++) {
-						if (sc.hasNextLine()){
+						if (sc.hasNextLine()) {
 							line = sc.nextLine();
-						
+
 							if (line.getBytes()[0] == 14) {
 								break;
 							} else {
@@ -180,15 +179,18 @@ public class Gyuri {
 				/// compare last and current results
 				if (n >= 1) {
 					System.out.println("");
-					System.out.println("Improvements (e.g. 150 means current=last+150):");
+					System.out.println("Improvements (e.g. (150) means current=last+150):");
 					for (Result currentResult : results) {
 						for (Result lastResult : resultsLast) {
 							if (currentResult.getFile().equals(lastResult.getFile())) {
 								System.out.println(currentResult.getFile() + ":");
-								System.out.println("     Score(+ => better): "
-										+ (currentResult.getScore() - lastResult.getScore()));
-								System.out.println(
-										"     Time(- => better): " + (currentResult.getTime() - lastResult.getTime()));
+								int scoreDiff = currentResult.getScore() - lastResult.getScore();
+								System.out.println("     Score(+ => better): " + currentResult.getScore() + " ("
+										+ (scoreDiff > 0 ? "+" : "") + scoreDiff + ")");
+
+								long timeDiff = currentResult.getTime() - lastResult.getTime();
+								System.out.println("     Time(- => better): " + currentResult.getTime() + " ("
+										+ (timeDiff > 0 ? "+" : "") + timeDiff + ")");
 
 								break;
 							}
@@ -392,9 +394,7 @@ class Cache {
 	private int size;
 
 	ArrayList<Video> videos;
-	
-	
-	
+
 	public Cache() {
 		super();
 		videos = new ArrayList<Video>();
@@ -405,7 +405,7 @@ class Cache {
 		this.id = cache.id;
 		this.size = cache.size;
 		this.videos = new ArrayList<Video>();
-		for (Video video : cache.videos){
+		for (Video video : cache.videos) {
 			this.videos.add(new Video(video));
 		}
 	}
@@ -453,7 +453,7 @@ class Request implements Comparable<Request> {
 
 	private Video video;
 	private int demand;
-	
+
 	public Request(Request request) {
 		super();
 		this.video = new Video(request.video);
@@ -513,8 +513,6 @@ class EndPoint {
 	private ArrayList<Pair<Cache, Integer>> chacheList;
 	private int dataCenterLatency;
 
-	
-	
 	public EndPoint() {
 		super();
 		requestList = new ArrayList<Request>();
@@ -523,14 +521,15 @@ class EndPoint {
 
 	public EndPoint(EndPoint endpoint) {
 		super();
-		this.id = endpoint.id;		
-		this.requestList = new  ArrayList<Request>();
-		for (Request request : endpoint.requestList){
+		this.id = endpoint.id;
+		this.requestList = new ArrayList<Request>();
+		for (Request request : endpoint.requestList) {
 			this.requestList.add(new Request(request));
 		}
 		this.chacheList = new ArrayList<Pair<Cache, Integer>>();
-		for (Pair<Cache, Integer> cacheElement : endpoint.chacheList){
-			this.chacheList.add(new Pair<Cache, Integer>(new Cache(cacheElement.getFirst()), new Integer(cacheElement.getSecond().intValue())));
+		for (Pair<Cache, Integer> cacheElement : endpoint.chacheList) {
+			this.chacheList.add(new Pair<Cache, Integer>(new Cache(cacheElement.getFirst()),
+					new Integer(cacheElement.getSecond().intValue())));
 		}
 		this.dataCenterLatency = endpoint.dataCenterLatency;
 	}

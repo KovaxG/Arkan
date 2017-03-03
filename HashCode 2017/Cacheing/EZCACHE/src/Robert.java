@@ -1,11 +1,12 @@
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
+
+import Entities.*;
 
 public class Robert {
 	public ArrayList<Video> videos = new ArrayList<Video>();
@@ -227,7 +228,7 @@ public class Robert {
 		Collections.sort(allRequestsByDemand, (o1, o2) -> o1.compareTo(o2));
 		
 		//caches already sorted
-		//Cache cache = allRequestsByDemand.get(0).get
+		//Cache cache = allRequestsByDemand.get(0)
 		
 		//////<---------------good from bad -------------->
 		

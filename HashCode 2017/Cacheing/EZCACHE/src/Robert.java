@@ -102,10 +102,10 @@ public class Robert {
 
 					// System.out.println("to Cache " + toCacheNr + " with
 					// Latency: " + toCacheLatency);
-					ep.getChacheList().add(new Pair<Cache, Integer>(caches.get(toCacheNr), toCacheLatency));
+					ep.getCacheAndLatencyList().add(new Pair<Cache, Integer>(caches.get(toCacheNr), toCacheLatency));
 				}
 				//Caches sorted by latency
-				Collections.sort(ep.getChacheList(), (o1, o2) -> o1.getSecond() - o2.getSecond());
+				Collections.sort(ep.getCacheAndLatencyList(), (o1, o2) -> o1.getSecond() - o2.getSecond());
 				
 				endpoints.add(ep);			
 					
@@ -206,10 +206,13 @@ public class Robert {
 		System.out.println(filename + ": Starting sort");
 		int progress = 0;
 		int progressPercentage = 0, progressPercentageOld = 0;
-		//Cache c = caches.get(0);
-
+		
+		long addedThisIteration = -1;
+		while (addedThisIteration != 0){
+			System.out.println(filename + ": Videos Added This iteration: " + addedThisIteration);
+			addedThisIteration=0;
 		for (Cache cache : caches) {
-
+			
 			/// keep track of progress;
 			progressPercentage = progress * 100 / cacheCount;
 			if (progressPercentage > progressPercentageOld)
@@ -226,7 +229,7 @@ public class Robert {
 				// var)
 				/// if it is first option, add it to selection and delete
 				// it(this cache will not be visited again)
-				ArrayList<Pair<Cache, Integer>> EPCacheList = e.getChacheList();
+				ArrayList<Pair<Cache, Integer>> EPCacheList = e.getCacheAndLatencyList();
 				if (!EPCacheList.isEmpty() && EPCacheList.get(0).getFirst().equals(cache)) {
 					bestEndPoints.add(new Pair<EndPoint, Integer>(e, EPCacheList.get(0).getSecond()));
 					EPCacheList.remove(0);
@@ -267,7 +270,7 @@ public class Robert {
 				if (vScore.video.getSize() < cache.getSize() && !cache.getVideos().contains(vScore.video)) {
 					cache.getVideos().add(vScore.video);
 					cache.setSize(cache.getSize() - vScore.video.getSize());
-
+					addedThisIteration++;
 					/// remove all requests that contain videos that have
 					/// been
 					/// inserted into the cache
@@ -286,6 +289,7 @@ public class Robert {
 				}
 			}
 		}
+	}//addedthisoperation
 	}
 	
 
@@ -335,7 +339,7 @@ public class Robert {
 
 					int minlag = ep.getDataCenterLatency();
 
-					for (Pair<Cache, Integer> p : ep.getChacheList()) {
+					for (Pair<Cache, Integer> p : ep.getCacheAndLatencyList()) {
 						Cache c = null;
 						//int lag = -1;
 						for (Cache cache : caches){

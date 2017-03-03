@@ -242,7 +242,7 @@ public class Gyuri {
 			// and the video is not in it already
 			int minLag = 99999;
 			Cache temp = null;
-			for (Pair<Cache, Integer> pair : endP.getChacheList()) {
+			for (Pair<Cache, Integer> pair : endP.getCacheAndLatencyList()) {
 				Cache c = pair.getFirst();
 				int lag = pair.getSecond();
 				if (c.getSize() >= r.getVideo().getSize() && !c.getVideos().contains(r.getVideo()) && lag < minLag) {
@@ -293,7 +293,7 @@ public class Gyuri {
 			for (Request req : ep.getRequestList()) {
 				int minlag = ep.getDataCenterLatency();
 
-				for (Pair<Cache, Integer> p : ep.getChacheList()) {
+				for (Pair<Cache, Integer> p : ep.getCacheAndLatencyList()) {
 					Cache c = p.getFirst();
 					int lag = p.getSecond();
 
@@ -513,14 +513,13 @@ class EndPoint {
 	private int id;
 	private ArrayList<Request> requestList;
 	
-	///TODO this name is misleading. It should be cacheAndLatencyList or stgh. Also mispelled
-	private ArrayList<Pair<Cache, Integer>> chacheList;
+	private ArrayList<Pair<Cache, Integer>> cacheAndLatencyList;
 	private int dataCenterLatency;
 
 	public EndPoint() {
 		super();
 		requestList = new ArrayList<Request>();
-		chacheList = new ArrayList<Pair<Cache, Integer>>();
+		cacheAndLatencyList = new ArrayList<Pair<Cache, Integer>>();
 	}
 
 	public EndPoint(EndPoint endpoint) {
@@ -530,16 +529,16 @@ class EndPoint {
 		for (Request request : endpoint.requestList) {
 			this.requestList.add(new Request(request));
 		}
-		this.chacheList = new ArrayList<Pair<Cache, Integer>>();
-		for (Pair<Cache, Integer> cacheElement : endpoint.chacheList) {
-			this.chacheList.add(new Pair<Cache, Integer>(new Cache(cacheElement.getFirst()),
+		this.cacheAndLatencyList = new ArrayList<Pair<Cache, Integer>>();
+		for (Pair<Cache, Integer> cacheElement : endpoint.cacheAndLatencyList) {
+			this.cacheAndLatencyList.add(new Pair<Cache, Integer>(new Cache(cacheElement.getFirst()),
 					new Integer(cacheElement.getSecond().intValue())));
 		}
 		this.dataCenterLatency = endpoint.dataCenterLatency;
 	}
 	
 	public boolean containsCache(Cache cache){
-		for (Pair<Cache,Integer> cachePair : chacheList){
+		for (Pair<Cache,Integer> cachePair : cacheAndLatencyList){
 			if (cachePair.getFirst().equals(cache))
 				return true;
 		}
@@ -558,17 +557,19 @@ class EndPoint {
 		return requestList;
 	}
 
-	public void setRequestList(ArrayList<Request> requestList) {
+	// see setChachelist
+	/*public void setRequestList(ArrayList<Request> requestList) {
 		this.requestList = requestList;
+	}*/
+
+	public ArrayList<Pair<Cache, Integer>> getCacheAndLatencyList() {
+		return cacheAndLatencyList;
 	}
 
-	public ArrayList<Pair<Cache, Integer>> getChacheList() {
-		return chacheList;
-	}
-
-	public void setChacheList(ArrayList<Pair<Cache, Integer>> chacheList) {
+	//since they are initialized in constructor
+	/*public void setChacheList(ArrayList<Pair<Cache, Integer>> chacheList) {
 		this.chacheList = chacheList;
-	}
+	}*/
 
 	public int getDataCenterLatency() {
 		return dataCenterLatency;

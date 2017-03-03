@@ -4,6 +4,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Scanner;
 
 public class Robert {
@@ -118,10 +119,15 @@ public class Robert {
 				int endpointID = sc.nextInt();
 				int demand = sc.nextInt();
 
-				Request request = new Request();
-				request.setDemand(demand);
-				request.setVideo(videos.get(videoID));
+				Request request = new Request(videos.get(videoID),demand,endpoints.get(endpointID));
 				endpoints.get(endpointID).getRequestList().add(request);
+				
+				if (endpoints.get(endpointID).getId()!= endpointID){
+					System.err.println("Data corrupted, missing Endpoint in sequesnce");
+				}
+				if (videos.get(videoID).getId() != videoID){
+					System.err.println("Data corrupted, missing Video in sequence");
+				}
 
 			}
 			
@@ -206,6 +212,24 @@ public class Robert {
 		System.out.println(filename + ": Starting sort");
 		int progress = 0;
 		int progressPercentage = 0, progressPercentageOld = 0;
+		
+		///create a list of all requests, then sort it
+		List<Request> allRequestsByDemand = new ArrayList<Request>();
+		for (EndPoint ep : endpoints) {
+			for (Request req : ep.getRequestList()) {
+				allRequestsByDemand.add(req);
+			}
+		}
+
+		System.out.println(filename + ": Starting Sort.");
+
+		// Sort the list using the demand field
+		Collections.sort(allRequestsByDemand, (o1, o2) -> o1.compareTo(o2));
+		
+		//caches already sorted
+		//Cache cache = allRequestsByDemand.get(0).get
+		
+		//////<---------------good from bad -------------->
 		
 		long addedThisIteration = -1;
 		while (addedThisIteration != 0){

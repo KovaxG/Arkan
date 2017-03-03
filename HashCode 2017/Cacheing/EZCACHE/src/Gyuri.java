@@ -8,8 +8,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
-import javax.swing.text.StyledEditorKit.ForegroundAction;
-
 public class Gyuri {
 	public static void main(String args[]) {
 
@@ -453,40 +451,44 @@ class Cache {
 
 class Request implements Comparable<Request> {
 
-	private Video video;
-	private int demand;
+	private final Video video;
+	private final int demand;
+	//that it belongs to
+	private final EndPoint endPoint; 
 
 	public Request(Request request) {
 		super();
 		this.video = new Video(request.video);
 		this.demand = request.demand;
+		this.endPoint = request.endPoint;
 	}
 
-	public Request() {
+	/*public Request() {
 		super();
-	};
+	};*/
 
-	public Request(Video video, int demand) {
+	public Request(Video video, int demand, EndPoint endPoint) {
 		super();
 		this.video = video;
 		this.demand = demand;
+		this.endPoint = endPoint;
 	}
 
 	public Video getVideo() {
 		return video;
 	}
-
+/*
 	public void setVideo(Video video) {
 		this.video = video;
-	}
+	}*/
 
 	public int getDemand() {
 		return demand;
 	}
-
+/*
 	public void setDemand(int demand) {
 		this.demand = demand;
-	}
+	}*/
 
 	public boolean equals(Object o) {
 		if (o == null)

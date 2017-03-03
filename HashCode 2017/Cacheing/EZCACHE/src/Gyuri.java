@@ -181,7 +181,7 @@ public class Gyuri {
 				/// compare last and current results
 				if (n >= 1) {
 					System.out.println("");
-					System.out.println("Improvements (e.g. (150) means current=last+150):");
+					System.out.println("Improvements (e.g. (+150) means current=last+150):");
 					for (Result currentResult : results) {
 						for (Result lastResult : resultsLast) {
 							if (currentResult.getFile().equals(lastResult.getFile())) {

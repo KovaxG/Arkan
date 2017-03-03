@@ -43,9 +43,20 @@ public class Cache {
 	public ArrayList<Video> getVideos() {
 		return videos;
 	}
-
+/*
 	public void setVideos(ArrayList<Video> videos) {
 		this.videos = videos;
+	}*/
+	
+	public boolean addVideo(Video video){
+		if (size-video.getSize()>=0 && !videos.contains(video)){
+			size -= video.getSize();
+			videos.add(video);
+			return true;
+		}
+		else{
+			return false;
+		}
 	}
 
 	public boolean equals(Object o) {

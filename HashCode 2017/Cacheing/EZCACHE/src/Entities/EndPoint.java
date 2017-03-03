@@ -38,6 +38,34 @@ public class EndPoint {
 		}
 		return false;
 	}
+	
+	public boolean containsVideo(Video video){
+		for (Request request : requestList){
+			if (request.getVideo().equals(video)){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public int getLatency(Cache cache){
+		for (Pair<Cache, Integer> cacheAndLag : cacheAndLatencyList){
+			if (cacheAndLag.getFirst().equals(cache)){
+				return cacheAndLag.getSecond();
+			}
+		}
+		return -1;
+	}
+	
+	public Request getRequestForVideo(Video video){
+		for (Request request : requestList){
+			if (request.getVideo().equals(video)){
+				return request;
+			}
+		}
+		
+		return null;
+	}
 
 	public int getId() {
 		return id;

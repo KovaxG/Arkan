@@ -8,8 +8,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
+import javax.swing.JOptionPane;
 
-import Entities.*;
+import Entities.Cache;
+import Entities.EndPoint;
+import Entities.Pair;
+import Entities.ProgressMeter;
+import Entities.Request;
+import Entities.Result;
+import Entities.Video;
 
 public class Gyuri {
 	public static void main(String args[]) {
@@ -300,6 +307,9 @@ public class Gyuri {
 					if (cache.addVideo(r.getVideo())){
 						for (EndPoint endPoint:robert.endpoints){
 							if (endPoint.containsCache(cache)){
+								/*if (toIgnore.contains(new Pair<EndPoint, Video>(endPoint, r.getVideo()))) {
+									JOptionPane.showConfirmDialog(null, "ERMATHERD");
+								}*/
 								toIgnore.add(new Pair<EndPoint, Video>(endPoint, r.getVideo()));
 							}
 						}

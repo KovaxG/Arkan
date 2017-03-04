@@ -15,6 +15,10 @@ public class ProgressMeter {
 		this.title = title;
 	}
 	
+	public int getCurrentProgressPercentage(){
+		return currentPercentage;
+	}
+	
 	public int increment(){
 		currentIteration++;
 		currentPercentage = currentIteration * 100 /totalIterations;

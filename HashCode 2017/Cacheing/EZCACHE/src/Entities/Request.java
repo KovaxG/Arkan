@@ -2,7 +2,7 @@ package Entities;
 
 public class Request implements Comparable<Request> {
 
-	private final int id;
+	final int id;
 	private final Video video;
 	private final int demand;
 	//that it belongs to

@@ -25,7 +25,7 @@ public class Robert {
 		 * Robert robert = new Robert("me_at_the_zoo"); robert.Parse();
 		 */
 		Gyuri.main(args);
-
+		
 	}
 
 	int videoCount;
@@ -350,13 +350,8 @@ public class Robert {
 					int minlag = ep.getDataCenterLatency();
 
 					for (Pair<Cache, Integer> p : ep.getCacheAndLatencyList()) {
-						Cache c = null;
-						// int lag = -1;
-						for (Cache cache : caches) {
-							if (cache.getId() == p.getFirst().getId()) {
-								c = cache;
-							}
-						}
+						Cache c = p.getFirst();
+						
 						// Cache c = p.getFirst();
 						int lag = p.getSecond();
 						if (c.getVideos().contains(req.getVideo())) {
@@ -374,12 +369,38 @@ public class Robert {
 				}
 			}
 			System.out.println("Not optimal video distribution: " + videoReachedAgain);
+			System.err.println("----------------------" + canAnEndPointAccesTheSameVideoFromMultipleCaches() + "------------------------");
 			return (int) (totalTimeSaved * 1000.0 / totalRequests);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
 		return -1;
 	}
+	
+	/*
+	 * Check if an endpoint can access the same video from multiple caches
+	 */
+	public String canAnEndPointAccesTheSameVideoFromMultipleCaches() {
+		// Go through all endpoints
+		for (EndPoint ep : endpoints) {
+			for (Request req : ep.getRequestList()) {
+				Video v = req.getVideo();
+				int appearances = 0;
+				
+				for (Cache c : ep.getCacheList()) {
+					if (c.getVideos().contains(v)) {
+						appearances++;
+					}
+				}
+				
+				if (appearances > 1) {
+					return String.format("Duplicate Video Detected! in endpoint: %d", ep.getId());
+				}
+			}
+		} 
+		return "Nope.";
+	} // End of canAnEndPointAccesTheSameVideoFromMultipleCaches	
 
 	public void WriteResults(ArrayList<Cache> caches) {
 

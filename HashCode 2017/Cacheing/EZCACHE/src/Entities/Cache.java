@@ -9,9 +9,11 @@ public class Cache {
 
 	ArrayList<Video> videos;
 
-	public Cache() {
+	public Cache(int id, int size) {
 		super();
 		videos = new ArrayList<Video>();
+		this.id = id;
+		this.size = size;
 	}
 
 	public Cache(Cache cache) {
@@ -36,10 +38,12 @@ public class Cache {
 		return size;
 	}
 
+	///This is done now through add
+	
 	public void setSize(int size) {
 		this.size = size;
 	}
-
+	
 	public ArrayList<Video> getVideos() {
 		return videos;
 	}
@@ -57,6 +61,14 @@ public class Cache {
 		else{
 			return false;
 		}
+	}
+	public boolean removeVideo(Video video) {
+		boolean result = videos.remove(video);
+		if (result){
+			size += video.getSize();
+		}
+		return result;
+		
 	}
 
 	public boolean equals(Object o) {

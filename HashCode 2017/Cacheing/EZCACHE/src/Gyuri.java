@@ -20,7 +20,8 @@ public class Gyuri {
 
 		for (String file : files) {
 			Robert robert = new Robert(file);
-
+			Gyuri gyuri = new Gyuri();
+			
 			long t0 = System.currentTimeMillis();
 
 			robert.Parse();
@@ -31,8 +32,8 @@ public class Gyuri {
 
 			Thread sorthread = new Thread(new Runnable() {
 				public void run() {
-					// Gyuri.sort(robert, file);
-					robert.sort();
+					gyuri.sort(robert, file);
+					//robert.sort();
 				}
 			});
 
@@ -209,7 +210,7 @@ public class Gyuri {
 
 	} // End of Main
 
-	public void sort(Robert robert, String file) {
+	public void sortOld(Robert robert, String file) {
 
 		System.out.println(file + ": Creating List of Requests");
 
@@ -258,6 +259,48 @@ public class Gyuri {
 				temp.getVideos().add(r.getVideo());
 
 				// printCacheList();
+			}
+		}
+	}
+	
+	public void sort(Robert robert, String file){
+		System.out.println(file + ": Creating List of Requests");
+
+		// Create an arrayList with all the requests
+		List<Request> allRequests = new ArrayList<Request>();
+		for (EndPoint ep : robert.endpoints) {
+			for (Request req : ep.getRequestList()) {
+				allRequests.add(req);
+			}
+		}
+
+		System.out.println(file + ": Starting Sort.");
+
+		// Sort the list using the demand field
+		Collections.sort(allRequests, (o1, o2) -> o1.compareTo(o2));
+
+		System.out.println(file + ": This will take forever");
+
+		// Go through all requests
+		int progress = 0, allRequestsCount=allRequests.size(),progressPercentage=0,progressPercentageOld=0;
+		for (Request r : allRequests) {
+			progress++;
+			progressPercentageOld = progressPercentage;
+			progressPercentage = progress * 100 / allRequestsCount;
+			if (progressPercentage != progressPercentageOld) {
+				System.out.println(file + ": " + progressPercentage + "%");
+			}
+			
+			Cache cache;
+			for (int i=0;i<r.getEndPoint().getCacheCount();i++){
+				cache = r.getEndPoint().getCache(i);
+				if (cache != null) {
+					///if video is successfully added, breaks i.e. adds it to the 
+					//cache with lowest latency that has free space
+					if (cache.addVideo(r.getVideo()))
+						break;
+					// printCacheList();
+				}
 			}
 		}
 	}

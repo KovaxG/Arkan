@@ -68,7 +68,10 @@ public class EndPoint {
 	}
 
 	public Cache getFastestCache(){
-		return cacheAndLatencyList.get(0).getFirst();
+		if (cacheAndLatencyList.isEmpty())
+			return null;
+		else
+			return cacheAndLatencyList.get(0).getFirst();
 	}
 	
 	public ArrayList<Cache> getCacheList(){
@@ -77,6 +80,19 @@ public class EndPoint {
 			result.add(cachePair.getFirst());
 		}
 		return result;
+	}
+	
+	public Cache getCache(int i){
+		if (cacheAndLatencyList.isEmpty()){
+			return null;
+		}
+		else{
+			return cacheAndLatencyList.get(i).getFirst();
+		}
+	}
+	
+	public int getCacheCount(){
+		return cacheAndLatencyList.size();
 	}
 	
 	public int getId() {

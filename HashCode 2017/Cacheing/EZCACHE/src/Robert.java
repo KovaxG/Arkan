@@ -70,9 +70,7 @@ public class Robert {
 			cacheSize = sc.nextInt();
 
 			for (int i = 0; i < cacheCount; i++) {
-				Cache c = new Cache();
-				c.setSize(cacheSize);
-				c.setId(i);
+				Cache c = new Cache(i, cacheSize);
 				caches.add(c);
 			}
 			// Cache.setSize(cacheSize);
@@ -150,13 +148,32 @@ public class Robert {
 	}
 
 	public void sort() {
+		sortOld();
+		/*
+		 * try { for (EndPoint ep : endpointsOriginal) { for (Request req :
+		 * ep.getRequestList()) {
+		 * 
+		 * int minlag = ep.getDataCenterLatency();
+		 * 
+		 * for (Pair<Cache, Integer> p : ep.getCacheAndLatencyList()) { Cache c
+		 * = null; // int lag = -1; for (Cache cache : caches) { if
+		 * (cache.getId() == p.getFirst().getId()) { c = cache; } } // Cache c =
+		 * p.getFirst(); int lag = p.getSecond(); if
+		 * (c.getVideos().contains(req.getVideo())) { if (lag < minlag) { minlag
+		 * = lag; }
+		 * 
+		 * } } } } } catch (Exception e) { e.printStackTrace(); }
+		 */
+	}
+
+	public void sortStupid() {
 		/// each cache is independent, so maybe this can be parallelized
 		System.out.println(filename + ": Starting sort");
 		int progress = 0;
 		int progressPercentage = 0, progressPercentageOld = 0;
-		
+
 		System.out.println(filename + ": Preparing Requests by demands");
-		
+
 		/// create a list of all requests, then sort it
 		List<Request> allRequestsByDemand = new ArrayList<Request>();
 		for (EndPoint ep : endpoints) {
@@ -165,47 +182,48 @@ public class Robert {
 			}
 		}
 
-
-
 		// Sort the list using the demand field
 		Collections.sort(allRequestsByDemand, (o1, o2) -> o1.compareTo(o2));
 
 		/// caches already sorted at read
 		System.out.println(filename + ": Parsing Requests and filling Caches");
-		///removing checked requests from the future might improve speed, but might degrade performance
+		/// removing checked requests from the future might improve speed, but
+		/// might degrade performance
 		int allRequestsCount = allRequestsByDemand.size();
 		for (Request request : allRequestsByDemand) {
-			
+
 			progress++;
 			progressPercentageOld = progressPercentage;
 			progressPercentage = progress * 100 / allRequestsCount;
-			if (progressPercentage!=progressPercentageOld){
+			if (progressPercentage != progressPercentageOld) {
 				System.out.println(filename + ": " + progressPercentage + "%");
 			}
-			
+
 			Video video = request.getVideo();
 
 			/// get the fastest cache that is connected to the endpoint that has
 			/// that request
-			if (request.getEndPoint().getCacheAndLatencyList().size() == 0){
+			if (request.getEndPoint().getCacheAndLatencyList().size() == 0) {
 				break;
 			}
 			Cache cacheForBestRequest = request.getEndPoint().getCacheAndLatencyList().get(0).getFirst();
 
 			/// get all the endpoints that are connected to that cache and have
 			/// requested that video
-			//ArrayList<EndPoint> endPointsConnectedToFastestCacheOfEndpointOfBestRequestByDemand = new ArrayList<EndPoint>();
+			// ArrayList<EndPoint>
+			/// endPointsConnectedToFastestCacheOfEndpointOfBestRequestByDemand
+			/// = new ArrayList<EndPoint>();
 
 			/// make a list of all the request that contain that video
 			ArrayList<RequestsWithScore> requestsWithScoreFromEndpointsConnectedToCacheInQuestion = new ArrayList<RequestsWithScore>();
-			
+
 			for (EndPoint endPoint : endpoints) {
 				int latencyEP_C = endPoint.getLatency(cacheForBestRequest);
 				/// check if the endpoint is connectoed to the cache
 				if (latencyEP_C != -1) {
 					Request requestForVideo = endPoint.getRequestForVideo(video);
 					if (requestForVideo != null) {
-						//endPointsConnectedToFastestCacheOfEndpointOfBestRequestByDemand.add(endPoint);
+						// endPointsConnectedToFastestCacheOfEndpointOfBestRequestByDemand.add(endPoint);
 
 						int latencyEP_D = endPoint.getDataCenterLatency();
 						int score = requestForVideo.getDemand() * (latencyEP_D - latencyEP_C);
@@ -214,15 +232,16 @@ public class Robert {
 					}
 				}
 			}
-			
+
 			Collections.sort(requestsWithScoreFromEndpointsConnectedToCacheInQuestion);
-			
-			///add the best choice to the cache
+
+			/// add the best choice to the cache
 			cacheForBestRequest.addVideo(requestsWithScoreFromEndpointsConnectedToCacheInQuestion.get(0).getVideo());
-			
-			///Remove video/request from all connected endpoints to this cache
-			///TODO these should only be removed if they have no other cache to which they can get it in a higher score manner
-			for (RequestsWithScore rws : requestsWithScoreFromEndpointsConnectedToCacheInQuestion){
+
+			/// Remove video/request from all connected endpoints to this cache
+			/// TODO these should only be removed if they have no other cache to
+			/// which they can get it in a higher score manner
+			for (RequestsWithScore rws : requestsWithScoreFromEndpointsConnectedToCacheInQuestion) {
 				rws.getRequest().getEndPoint().getRequestList().removeIf(r -> r.getClass().equals(rws.getVideo()));
 			}
 		}
@@ -233,94 +252,98 @@ public class Robert {
 		int progress = 0;
 		int progressPercentage = 0, progressPercentageOld = 0;
 
-		long addedThisIteration = -1;
-		while (addedThisIteration != 0) {
-			System.out.println(filename + ": Videos Added This iteration: " + addedThisIteration);
-			addedThisIteration = 0;
-			for (Cache cache : caches) {
-				progress++;
-				progressPercentage = progress * 100 / cacheCount;
+		// long addedThisIteration = -1;
+		// while (addedThisIteration != 0) {
+		// System.out.println(filename + ": Videos Added This iteration: " +
+		// addedThisIteration);
+		// addedThisIteration = 0;
+		List<Request> allRequestsByDemand = new ArrayList<Request>();
+		for (EndPoint ep : endpoints) {
+			for (Request req : ep.getRequestList()) {
+				allRequestsByDemand.add(req);
+			}
+		}
+		Cache cache;
 
-				/// keep track of progress;
-				if (progressPercentage > progressPercentageOld)
-					System.out.println(filename + ": Progress: " + progressPercentage + "%");
-				progressPercentageOld = progressPercentage;
+		for (Request reqByDem : allRequestsByDemand) {
+			ArrayList<Pair<Cache, Integer>> epCheckCache = reqByDem.getEndPoint().getCacheAndLatencyList();
+			if (!epCheckCache.isEmpty()){
+				cache = epCheckCache.get(0).getFirst();
+			}
+			else{
+				break;
+			}
+			progress++;
+			progressPercentage = progress * 100 / allRequestsByDemand.size();
 
-				// find end points which have this cache as lowest latency
-				// option
-				ArrayList<Pair<EndPoint, Integer>> bestEndPoints = new ArrayList<Pair<EndPoint, Integer>>();
-				for (EndPoint e : endpoints) {
-					// endpoints sorted at the beginninng
-					// im not sure if this is actually faster or slower(using a
-					// temp
-					// var)
-					/// if it is first option, add it to selection and delete
-					// it(this cache will not be visited again)
-					ArrayList<Pair<Cache, Integer>> EPCacheList = e.getCacheAndLatencyList();
-					if (!EPCacheList.isEmpty() && EPCacheList.get(0).getFirst().equals(cache)) {
-						bestEndPoints.add(new Pair<EndPoint, Integer>(e, EPCacheList.get(0).getSecond()));
-						EPCacheList.remove(0);
-					}
+			/// keep track of progress;
+			if (progressPercentage > progressPercentageOld)
+				System.out.println(filename + ": Progress: " + progressPercentage + "%");
+			progressPercentageOld = progressPercentage;
+
+			// find end points which have this cache as lowest latency
+			// option
+			ArrayList<Pair<EndPoint, Integer>> bestEndPoints = new ArrayList<Pair<EndPoint, Integer>>();
+			for (EndPoint e : endpoints) {
+				// endpoints sorted at the beginninng
+				// im not sure if this is actually faster or slower(using a
+				// temp
+				// var)
+				/// if it is first option, add it to selection and delete
+				// it(this cache will not be visited again)
+				ArrayList<Pair<Cache, Integer>> EPCacheList = e.getCacheAndLatencyList();
+				if (!EPCacheList.isEmpty() && EPCacheList.get(0).getFirst().equals(cache)) {
+					bestEndPoints.add(new Pair<EndPoint, Integer>(e, EPCacheList.get(0).getSecond()));
+					EPCacheList.remove(0);
 				}
+			}
 
-				/// construct a list with the videos and afferent scores from
-				/// the
-				/// endpoints selected
-				ArrayList<VideosWithScore> videosWithScores = new ArrayList<VideosWithScore>();
-				for (Pair<EndPoint, Integer> e : bestEndPoints) {
-					for (Request request : e.getFirst().getRequestList()) {
+			/// construct a list with the videos and afferent scores from
+			/// the
+			/// endpoints selected
+			ArrayList<VideosWithScore> videosWithScores = new ArrayList<VideosWithScore>();
+			for (Pair<EndPoint, Integer> e : bestEndPoints) {
+				for (Request request : e.getFirst().getRequestList()) {
 
-						int DL = e.getFirst().getDataCenterLatency();
-						int L = e.getSecond();
-						int score = request.getDemand() * (DL - L);
-						Video video = request.getVideo();
+					int DL = e.getFirst().getDataCenterLatency();
+					int L = e.getSecond();
+					int score = request.getDemand() * (DL - L);
+					Video video = request.getVideo();
 
-						if (videosWithScores.contains(video)) {
-							int index = videosWithScores.indexOf(video);
-							if (videosWithScores.get(index).getScore() < score) {
-								videosWithScores.remove(index);
-								videosWithScores.add(new VideosWithScore(video, score));
-							}
-						} else {
+					if (videosWithScores.contains(video)) {
+						int index = videosWithScores.indexOf(video);
+						if (videosWithScores.get(index).getScore() < score) {
+							videosWithScores.remove(index);
 							videosWithScores.add(new VideosWithScore(video, score));
 						}
-					}
-				}
-
-				// sorted in descending order
-				Collections.sort(videosWithScores);
-
-				// Select the best videos to put in
-				// TODO write code for replacing already inserted videos, for a
-				// better combination
-				for (VideosWithScore vScore : videosWithScores) {
-					if (vScore.getVideo().getSize() < cache.getSize()
-							&& !cache.getVideos().contains(vScore.getVideo())) {
-						cache.getVideos().add(vScore.getVideo());
-						cache.setSize(cache.getSize() - vScore.getVideo().getSize());
-						addedThisIteration++;
-						/// remove all requests that contain videos that have
-						/// been
-						/// inserted into the cache
-						/*
-						 * for (EndPoint e : endpoints) {
-						 * 
-						 * e.getRequestList().removeIf(r ->
-						 * r.getVideo().equals(vScore.video)); }
-						 */
-						for (int i = 0; i < endpointCount; i++) {
-
-							if (endpointsOriginal.get(i).containsCache(cache)) {
-								endpoints.get(i).getRequestList().removeIf(r -> r.getVideo().equals(vScore.getVideo()));
-							}
-						}
 					} else {
-						break;
+						videosWithScores.add(new VideosWithScore(video, score));
 					}
 				}
 			}
-		} // addedthisoperation
-	}
+
+			// sorted in descending order
+			Collections.sort(videosWithScores);
+
+			// Select the best videos to put in
+			// TODO write code for replacing already inserted videos, for a
+			// better combination
+			for (VideosWithScore vScore : videosWithScores) {
+				if (vScore.getVideo().getSize() < cache.getSize() && !cache.getVideos().contains(vScore.getVideo())) {
+					cache.getVideos().add(vScore.getVideo());
+					// addedThisIteration++;
+					for (int i = 0; i < endpointCount; i++) {
+
+						if (endpointsOriginal.get(i).containsCache(cache)) {
+							endpoints.get(i).getRequestList().removeIf(r -> r.getVideo().equals(vScore.getVideo()));
+						}
+					}
+				} else {
+					break;
+				}
+			}
+		}
+	} // addedthisoperation
 
 	public int calculateScore() {
 		try {

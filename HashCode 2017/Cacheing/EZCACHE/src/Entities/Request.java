@@ -20,6 +20,10 @@ public class Request implements Comparable<Request> {
 		this.demand = request.demand;
 		this.endPoint = request.endPoint;
 		this.id = request.id;
+		this.dataCenterLagOfParent = request.dataCenterLagOfParent;
+		this.cacheLagOfParent = request.cacheLagOfParent;
+		this.timeSaved = request.timeSaved;
+		this.cache = request.cache;
 	}
 
 	/*public Request() {

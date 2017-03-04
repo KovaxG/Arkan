@@ -335,11 +335,14 @@ public class Gyuri {
 			
 			for (Request r : reqList) {
 				r.setCacheLagOfParent(r.getEndPoint().getCacheAndLatencyList().stream().filter(p -> p.getFirst().equals(c)).findFirst().get().getSecond());
-				r.setTimeSaved(r.getDataCenterLagOfParent() - r.getCacheLagOfParent());
+				r.setTimeSaved((r.getDataCenterLagOfParent() - r.getCacheLagOfParent()) * r.getDemand());
 				r.setCache(c);
 			}
 			
-			allRequests.addAll(reqList);
+			//allRequests.addAll(reqList);
+			for (Request requestToCopy : reqList){
+				allRequests.add(new Request(requestToCopy));
+			}
 		}
 		
 		System.out.println(file + ": Sorting Stuff (not really)");
@@ -350,7 +353,7 @@ public class Gyuri {
 			final int q = i;
 			meter.increment();
 			List<Request> filter = allRequests.stream().filter(r -> r.getId() == q).collect(Collectors.toList());
-			//reqList.add(filter.max((a, b) -> a.getTimeSaved() - b.getTimeSaved()).get()); // May return min instead of max
+			//Collections.sort(filter, (o1,o2) -> o2.getTimeSaved() - o1.getTimeSaved());
 			
 			if (!filter.isEmpty())
 			reqList.add(filter.get(0));
@@ -361,7 +364,7 @@ public class Gyuri {
 		for (Request req : reqList) {
 			meter.increment();
 			List<Request> versions = allRequests.stream().filter(r -> r.getId() == req.getId()).collect(Collectors.toList());
-			Collections.sort(versions, (o1, o2) -> o2.getTimeSaved() - o1.getTimeSaved());
+			Collections.sort(versions, (o1, o2) -> -o2.getTimeSaved() + o1.getTimeSaved());
 			
 			int index = 0;
 			boolean exit = false;

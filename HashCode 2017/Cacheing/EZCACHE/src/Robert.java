@@ -343,6 +343,7 @@ public class Robert {
 			/// calculate score
 			long totalTimeSaved = 0;
 			long totalRequests = 0;
+			int timesInsertedVideoIncorrectly = 0;
 			for (EndPoint ep : endpointsOriginal) {
 				for (Request req : ep.getRequestList()) {
 
@@ -362,6 +363,9 @@ public class Robert {
 							if (lag < minlag) {
 								minlag = lag;
 							}
+							else{
+								timesInsertedVideoIncorrectly++;
+							}
 
 						}
 					}
@@ -369,6 +373,7 @@ public class Robert {
 					totalRequests = totalRequests + req.getDemand();
 				}
 			}
+			System.out.println(filename + ": Times incorrecty inserted video(duplicate): " + timesInsertedVideoIncorrectly);
 			return (int) (totalTimeSaved * 1000.0 / totalRequests);
 		} catch (Exception e) {
 			e.printStackTrace();

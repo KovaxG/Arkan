@@ -118,7 +118,7 @@ public class Robert {
 				int endpointID = sc.nextInt();
 				int demand = sc.nextInt();
 
-				Request request = new Request(videos.get(videoID), demand, endpoints.get(endpointID));
+				Request request = new Request(i,videos.get(videoID), demand, endpoints.get(endpointID));
 				endpoints.get(endpointID).getRequestList().add(request);
 
 				if (endpoints.get(endpointID).getId() != endpointID) {
@@ -341,6 +341,7 @@ public class Robert {
 			// ArrayList<EndPoint>();
 
 			/// calculate score
+			int videoReachedAgain=0;
 			long totalTimeSaved = 0;
 			long totalRequests = 0;
 			for (EndPoint ep : endpointsOriginal) {
@@ -362,6 +363,9 @@ public class Robert {
 							if (lag < minlag) {
 								minlag = lag;
 							}
+							else{
+								videoReachedAgain++;
+							}
 
 						}
 					}
@@ -369,6 +373,7 @@ public class Robert {
 					totalRequests = totalRequests + req.getDemand();
 				}
 			}
+			System.out.println("Not optimal video distribution: " + videoReachedAgain);
 			return (int) (totalTimeSaved * 1000.0 / totalRequests);
 		} catch (Exception e) {
 			e.printStackTrace();

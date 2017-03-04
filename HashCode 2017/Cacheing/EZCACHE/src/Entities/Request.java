@@ -2,6 +2,7 @@ package Entities;
 
 public class Request implements Comparable<Request> {
 
+	private final int id;
 	private final Video video;
 	private final int demand;
 	//that it belongs to
@@ -12,17 +13,23 @@ public class Request implements Comparable<Request> {
 		this.video = new Video(request.video);
 		this.demand = request.demand;
 		this.endPoint = request.endPoint;
+		this.id=request.id;
 	}
 
 	/*public Request() {
 		super();
 	};*/
 
-	public Request(Video video, int demand, EndPoint endPoint) {
+	public Request(int id,Video video, int demand, EndPoint endPoint) {
 		super();
+		this.id = id;
 		this.video = video;
 		this.demand = demand;
 		this.endPoint = endPoint;
+	}
+
+	public int getId() {
+		return id;
 	}
 
 	public Video getVideo() {
@@ -41,6 +48,7 @@ public class Request implements Comparable<Request> {
 		this.demand = demand;
 	}*/
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null)
 			return false;
@@ -48,7 +56,7 @@ public class Request implements Comparable<Request> {
 			return false;
 
 		Request r = (Request) o;
-		return r.getVideo().equals(this.video) && r.getDemand() == this.demand;
+		return r.getVideo().equals(this.video) && r.getDemand() == this.demand && r.getId() == this.id;
 	}
 
 	public EndPoint getEndPoint() {

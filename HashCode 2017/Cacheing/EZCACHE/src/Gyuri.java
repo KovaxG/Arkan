@@ -8,14 +8,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
-import javax.xml.ws.Endpoint;
 
 import Entities.*;
 
 public class Gyuri {
 	public static void main(String args[]) {
 
-		String[] files = { "example", "me_at_the_zoo", "trending_today", "videos_worth_spreading", "kittens" };
+		String[] files = { "example", "me_at_the_zoo"/*, "trending_today"*/, "videos_worth_spreading"/*, "kittens"*/ };
 		String logFile = "log.txt";
 
 		ArrayList<Result> results = new ArrayList<Result>();
@@ -287,12 +286,15 @@ public class Gyuri {
 		ProgressMeter progress = new ProgressMeter(allRequests.size(), file);
 		ArrayList<Pair<EndPoint, Video>> toIgnore = new ArrayList<Pair<EndPoint, Video>> ();
 		for (Request r : allRequests) {
-
+			if (toIgnore.contains(new Pair<EndPoint,Video>(r.getEndPoint(),r.getVideo()))){
+				continue;
+			}
+			
 			progress.increment();
 			Cache cache;
 			for (int i=0;i<r.getEndPoint().getCacheCount();i++){
 				cache = r.getEndPoint().getCache(i);
-				if (cache != null && !toIgnore.contains(new Pair<EndPoint,Video>(r.getEndPoint(),r.getVideo()))) {
+				//if (!toIgnore.contains(new Pair<EndPoint,Video>(r.getEndPoint(),r.getVideo()))) {
 					///if video is successfully added, breaks i.e. adds it to the 
 					//cache with lowest latency that has free space
 					if (cache.addVideo(r.getVideo())){
@@ -304,7 +306,7 @@ public class Gyuri {
 						break;
 					}
 					// printCacheList();
-				}
+				//}
 			}
 		}
 	}

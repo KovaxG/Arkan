@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
+import javax.xml.ws.Endpoint;
+
 import Entities.*;
 
 public class Gyuri {
@@ -282,23 +284,25 @@ public class Gyuri {
 		System.out.println(file + ": This will take forever");
 
 		// Go through all requests
-		int progress = 0, allRequestsCount=allRequests.size(),progressPercentage=0,progressPercentageOld=0;
+		ProgressMeter progress = new ProgressMeter(allRequests.size(), file);
+		ArrayList<Pair<EndPoint, Video>> toIgnore = new ArrayList<Pair<EndPoint, Video>> ();
 		for (Request r : allRequests) {
-			progress++;
-			progressPercentageOld = progressPercentage;
-			progressPercentage = progress * 100 / allRequestsCount;
-			if (progressPercentage != progressPercentageOld) {
-				System.out.println(file + ": " + progressPercentage + "%");
-			}
-			
+
+			progress.increment();
 			Cache cache;
 			for (int i=0;i<r.getEndPoint().getCacheCount();i++){
 				cache = r.getEndPoint().getCache(i);
-				if (cache != null) {
+				if (cache != null && !toIgnore.contains(new Pair<EndPoint,Video>(r.getEndPoint(),r.getVideo()))) {
 					///if video is successfully added, breaks i.e. adds it to the 
 					//cache with lowest latency that has free space
-					if (cache.addVideo(r.getVideo()))
+					if (cache.addVideo(r.getVideo())){
+						for (EndPoint endPoint:robert.endpoints){
+							if (endPoint.containsCache(cache)){
+								toIgnore.add(new Pair<EndPoint, Video>(endPoint, r.getVideo()));
+							}
+						}
 						break;
+					}
 					// printCacheList();
 				}
 			}

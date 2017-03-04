@@ -169,8 +169,6 @@ public class Robert {
 	public void sortStupid() {
 		/// each cache is independent, so maybe this can be parallelized
 		System.out.println(filename + ": Starting sort");
-		int progress = 0;
-		int progressPercentage = 0, progressPercentageOld = 0;
 
 		System.out.println(filename + ": Preparing Requests by demands");
 
@@ -189,15 +187,9 @@ public class Robert {
 		System.out.println(filename + ": Parsing Requests and filling Caches");
 		/// removing checked requests from the future might improve speed, but
 		/// might degrade performance
-		int allRequestsCount = allRequestsByDemand.size();
+		ProgressMeter progress = new ProgressMeter(allRequestsByDemand.size(), filename);
 		for (Request request : allRequestsByDemand) {
-
-			progress++;
-			progressPercentageOld = progressPercentage;
-			progressPercentage = progress * 100 / allRequestsCount;
-			if (progressPercentage != progressPercentageOld) {
-				System.out.println(filename + ": " + progressPercentage + "%");
-			}
+			progress.increment();
 
 			Video video = request.getVideo();
 
@@ -249,8 +241,7 @@ public class Robert {
 	}
 
 	public void sortOld() {
-		int progress = 0;
-		int progressPercentage = 0, progressPercentageOld = 0;
+
 
 		// long addedThisIteration = -1;
 		// while (addedThisIteration != 0) {
@@ -265,6 +256,7 @@ public class Robert {
 		}
 		Cache cache;
 
+		ProgressMeter progress = new ProgressMeter(allRequestsByDemand.size(), filename);
 		for (Request reqByDem : allRequestsByDemand) {
 			ArrayList<Pair<Cache, Integer>> epCheckCache = reqByDem.getEndPoint().getCacheAndLatencyList();
 			if (!epCheckCache.isEmpty()){
@@ -273,13 +265,7 @@ public class Robert {
 			else{
 				break;
 			}
-			progress++;
-			progressPercentage = progress * 100 / allRequestsByDemand.size();
-
-			/// keep track of progress;
-			if (progressPercentage > progressPercentageOld)
-				System.out.println(filename + ": Progress: " + progressPercentage + "%");
-			progressPercentageOld = progressPercentage;
+			progress.increment();
 
 			// find end points which have this cache as lowest latency
 			// option

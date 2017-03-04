@@ -67,6 +67,18 @@ public class EndPoint {
 		return null;
 	}
 
+	public Cache getFastestCache(){
+		return cacheAndLatencyList.get(0).getFirst();
+	}
+	
+	public ArrayList<Cache> getCacheList(){
+		ArrayList<Cache> result = new ArrayList<Cache>();
+		for (Pair<Cache, Integer> cachePair : cacheAndLatencyList){
+			result.add(cachePair.getFirst());
+		}
+		return result;
+	}
+	
 	public int getId() {
 		return id;
 	}

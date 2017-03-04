@@ -2,18 +2,21 @@ package Entities;
 
 import java.util.ArrayList;
 
+
 public class Cache {
 
 	private int id;
 	private int size;
 
 	ArrayList<Video> videos;
+	ArrayList<EndPoint> endPoints;
 
 	public Cache(int id, int size) {
 		super();
 		videos = new ArrayList<Video>();
 		this.id = id;
 		this.size = size;
+		this.endPoints = new ArrayList<EndPoint>();
 	}
 
 	public Cache(Cache cache) {
@@ -23,6 +26,10 @@ public class Cache {
 		this.videos = new ArrayList<Video>();
 		for (Video video : cache.videos) {
 			this.videos.add(new Video(video));
+		}
+		this.endPoints = new ArrayList<EndPoint>();
+		for (EndPoint endPoint : cache.endPoints) {
+			this.endPoints.add(endPoint);
 		}
 	}
 
@@ -36,6 +43,11 @@ public class Cache {
 
 	public int getSize() {
 		return size;
+	}
+	
+
+	public ArrayList<EndPoint> getEndpoints() {
+		return endPoints;
 	}
 
 	///This is done now through add

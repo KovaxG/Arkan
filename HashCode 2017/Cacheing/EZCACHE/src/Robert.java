@@ -102,7 +102,9 @@ public class Robert {
 
 					// System.out.println("to Cache " + toCacheNr + " with
 					// Latency: " + toCacheLatency);
-					ep.getCacheAndLatencyList().add(new Pair<Cache, Integer>(caches.get(toCacheNr), toCacheLatency));
+					Cache cacheToAdd = caches.get(toCacheNr);
+					cacheToAdd.getEndpoints().add(ep);
+					ep.getCacheAndLatencyList().add(new Pair<Cache, Integer>(cacheToAdd, toCacheLatency));
 				}
 				// Caches sorted by latency
 				Collections.sort(ep.getCacheAndLatencyList(), (o1, o2) -> o1.getSecond() - o2.getSecond());
@@ -118,7 +120,7 @@ public class Robert {
 				int endpointID = sc.nextInt();
 				int demand = sc.nextInt();
 
-				Request request = new Request(videos.get(videoID), demand, endpoints.get(endpointID));
+				Request request = new Request(videos.get(videoID), demand, endpoints.get(endpointID), i);
 				endpoints.get(endpointID).getRequestList().add(request);
 
 				if (endpoints.get(endpointID).getId() != endpointID) {

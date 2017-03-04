@@ -1,9 +1,16 @@
 package Entities;
 
+import org.omg.CORBA.ORBPackage.InconsistentTypeCode;
+
 public class Request implements Comparable<Request> {
 
+	private final int id;
 	private final Video video;
 	private final int demand;
+	private int dataCenterLagOfParent;
+	private int cacheLagOfParent;
+	private int timeSaved;
+	private Cache cache;
 	//that it belongs to
 	private final EndPoint endPoint; 
 
@@ -12,17 +19,57 @@ public class Request implements Comparable<Request> {
 		this.video = new Video(request.video);
 		this.demand = request.demand;
 		this.endPoint = request.endPoint;
+		this.id = request.id;
 	}
 
 	/*public Request() {
 		super();
 	};*/
 
-	public Request(Video video, int demand, EndPoint endPoint) {
+	public Request(Video video, int demand, EndPoint endPoint, int id) {
 		super();
 		this.video = video;
 		this.demand = demand;
 		this.endPoint = endPoint;
+		this.id = id;
+	}
+	
+	
+	
+	public Cache getCache() {
+		return cache;
+	}
+
+	public void setCache(Cache cache) {
+		this.cache = cache;
+	}
+
+	public int getId() {
+		return id;
+	}
+	
+	public int getTimeSaved() {
+		return timeSaved;
+	}
+
+	public void setTimeSaved(int timeSaved) {
+		this.timeSaved = timeSaved;
+	}
+
+	public int getDataCenterLagOfParent() {
+		return dataCenterLagOfParent;
+	}
+
+	public void setDataCenterLagOfParent(int dataCenterLagOfParent) {
+		this.dataCenterLagOfParent = dataCenterLagOfParent;
+	}
+
+	public int getCacheLagOfParent() {
+		return cacheLagOfParent;
+	}
+
+	public void setCacheLagOfParent(int cacheLagOfParent) {
+		this.cacheLagOfParent = cacheLagOfParent;
 	}
 
 	public Video getVideo() {

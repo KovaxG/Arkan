@@ -3,14 +3,22 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.RandomAccessFile;
+import java.nio.file.DirectoryStream.Filter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import javax.xml.ws.Endpoint;
-
-import Entities.*;
+import Entities.Cache;
+import Entities.EndPoint;
+import Entities.Pair;
+import Entities.ProgressMeter;
+import Entities.Request;
+import Entities.Result;
+import Entities.Video;
 
 public class Gyuri {
 	public static void main(String args[]) {
@@ -34,7 +42,7 @@ public class Gyuri {
 
 			Thread sorthread = new Thread(new Runnable() {
 				public void run() {
-					gyuri.sort(robert, file);
+					gyuri.alternativeSort(robert, file);
 					//robert.sort();
 				}
 			});
@@ -306,6 +314,76 @@ public class Gyuri {
 					}
 			}
 		}
+	} // End of sort
+	
+	public void alternativeSort(Robert robert, String file) {
+		
+		System.out.println(file + ": Setting DC Lag");
+		// Add parentDataCenterLatency for all requests
+		for (EndPoint ep : robert.endpoints) {
+			for (Request r : ep.getRequestList()) {
+				r.setDataCenterLagOfParent(ep.getDataCenterLatency());
+			}
+		}
+		
+		System.out.println(file + ": Creating list allRequests");
+		// Create a list with all the requests
+		// The requests appear multiple times, there are as many requests as caches / request
+		ArrayList<Request> allRequests = new ArrayList<Request>();
+		for (Cache c : robert.caches) {
+			ArrayList<Request> reqList = getAllRequestsForThisCache(c);
+			
+			for (Request r : reqList) {
+				r.setCacheLagOfParent(r.getEndPoint().getCacheAndLatencyList().stream().filter(p -> p.getFirst().equals(c)).findFirst().get().getSecond());
+				r.setTimeSaved(r.getDataCenterLagOfParent() - r.getCacheLagOfParent());
+				r.setCache(c);
+			}
+			
+			allRequests.addAll(reqList);
+		}
+		
+		System.out.println(file + ": Sorting Stuff (not really)");
+		// Make a sorted list of requests
+		ArrayList<Request> reqList = new ArrayList<Request>();
+		ProgressMeter meter = new ProgressMeter(robert.requestDesctriptionCount, file);
+		for (int i = 0; i < robert.requestDesctriptionCount; i++) {
+			final int q = i;
+			meter.increment();
+			List<Request> filter = allRequests.stream().filter(r -> r.getId() == q).collect(Collectors.toList());
+			//reqList.add(filter.max((a, b) -> a.getTimeSaved() - b.getTimeSaved()).get()); // May return min instead of max
+			
+			if (!filter.isEmpty())
+			reqList.add(filter.get(0));
+		}
+		
+		System.out.println(file + ": Adding stuff to caches.");
+		meter.reset();
+		for (Request req : reqList) {
+			meter.increment();
+			List<Request> versions = allRequests.stream().filter(r -> r.getId() == req.getId()).collect(Collectors.toList());
+			Collections.sort(versions, (o1, o2) -> o2.getTimeSaved() - o1.getTimeSaved());
+			
+			int index = 0;
+			boolean exit = false;
+			while (!exit) {
+				if (index >= versions.size() - 1) {
+					exit = true;
+				}
+				
+				Request rekt = versions.get(index);
+				if (rekt.getCache().addVideo(rekt.getVideo())) {
+					exit = true;
+				}
+				
+				index ++;
+			}
+		}
+	} // End of alternatieSort
+	
+	public ArrayList<Request> getAllRequestsForThisCache(Cache c) {
+		ArrayList<Request> req = new ArrayList<Request>();
+		c.getEndpoints().forEach(ep -> req.addAll(ep.getRequestList()));
+		return req;
 	}
 
 	public void printCacheList(Robert robert) {

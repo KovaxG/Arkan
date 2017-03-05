@@ -1,10 +1,14 @@
+import java.awt.print.PrinterIOException;
 import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
+
+import javax.xml.ws.Endpoint;
 
 import Entities.*;
 
@@ -150,7 +154,48 @@ public class Robert {
 	}
 
 	public void sort() {
-		sortOld();
+		
+		List<Request> allRequestsByDemand = new ArrayList<Request>();
+		for (EndPoint ep : endpoints) {
+			for (Request req : ep.getRequestList()) {
+				allRequestsByDemand.add(req);
+			}
+		}
+		
+		ProgressMeter meter = new ProgressMeter(allRequestsByDemand.size(), filename);
+		
+		for(Request request: allRequestsByDemand){
+			meter.increment();
+			
+			HashSet<Cache> set = new HashSet<Cache>();
+			for (EndPoint endPoint : request.getEndPoint().getFastestCache().getEndpoints()){
+				for (Cache cache : endPoint.getCacheList()){
+					set.add(cache);
+				}
+			}
+			
+			int bestscore = -1;
+			Cache bestCache = null,bestCache2=null;
+			for (Cache cache2 : set){
+				cache2.addVideo(request.getVideo());
+				for (Cache cache : set){
+					int gainedScore = request.getGainedScore(cache);
+					if (gainedScore > bestscore){
+						bestscore = gainedScore;
+						bestCache = cache;
+						bestCache2=cache2;
+					}
+					
+				}
+				cache2.removeVideo(request.getVideo());
+			}
+			
+			if (bestCache!= null){
+				bestCache.addVideo(request.getVideo());
+			}
+		}
+		
+		//sortOld();
 		/*
 		 * try { for (EndPoint ep : endpointsOriginal) { for (Request req :
 		 * ep.getRequestList()) {
@@ -382,7 +427,7 @@ public class Robert {
 		}
 		return -1;
 	}
-
+	
 	public void WriteResults(ArrayList<Cache> caches) {
 
 		BufferedWriter wr;

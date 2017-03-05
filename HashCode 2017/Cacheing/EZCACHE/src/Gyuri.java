@@ -27,7 +27,7 @@ import Entities.Video;
 public class Gyuri {
 	public static void main(String args[]) {
 
-		String[] files = { /*"example", */"me_at_the_zoo", "trending_today", "videos_worth_spreading"/*, "kittens" */};
+		String[] files = { /*"example", */"me_at_the_zoo", "trending_today", "videos_worth_spreading", "kittens" };
 		String logFile = "log.txt";
 
 		ArrayList<Result> results = new ArrayList<Result>();
@@ -46,8 +46,8 @@ public class Gyuri {
 
 			Thread sorthread = new Thread(new Runnable() {
 				public void run() {
-					//robert.sort();
-					gyuri.sort(robert, file);
+					robert.sort();
+					//gyuri.sort(robert, file);
 				}
 			});
 
@@ -310,36 +310,28 @@ public class Gyuri {
 					///if video is successfully added, breaks i.e. adds it to the 
 					//cache with lowest latency that has free space
 					if (cache.addVideo(r.getVideo())){
-						//Video video = cache.getVideos().get(cache.getVideos().size()-1);
-						//video.setScore(0);
 						for (EndPoint endPoint:cache.getEndpoints()){
 							toIgnore.add(new Pair<EndPoint, Video>(endPoint, r.getVideo()));
-							//video.setScore(video.getScore() + (endPoint.getDataCenterLatency()-endPoint.getLatency(cache))*r.getDemand());
 						}
 						break;
 					}
 					///this is not always optimal
-					/*else{
+					else{
 						if (!cache.getVideos().contains(r.getVideo())){
-							ArrayList<Video> CachedVideos = new ArrayList<Video>();
+						//boolean noActionPerformed = false;
+						//while (!noActionPerformed){
+							//noActionPerformed = true;
 							for (Video video : cache.getVideos()){
-								CachedVideos.add(video);
-							}
-							for (Video video : CachedVideos){
-								int potentialScore = 0;
-								for (EndPoint endPoint:cache.getEndpoints()){
-									if (!endPoint.getRequestList().stream().filter(rt -> rt.getVideo().equals(r.getVideo())).findAny().equals(Optional.empty())){
-										potentialScore += (endPoint.getDataCenterLatency()-endPoint.getLatency(cache)
-												*endPoint.getRequestList().stream().filter(rt-> rt.getVideo().equals(r.getVideo())).findFirst().get().getDemand());
-									}
-								}
-								if (potentialScore > video.getScore() && r.getVideo().getSize()<=video.getSize()){
+								if (r.getGainedScore(cache) >= video.getSimpleScore(cache) && (r.getVideo().getSize()<=video.getSize() )){
 									cache.removeVideo(video);
 									cache.addVideo(r.getVideo());
+									//noActionPerformed = false;
+									break;
 								}
 							}
+						//}
 						}
-					}*/
+					}
 			}
 		}
 		

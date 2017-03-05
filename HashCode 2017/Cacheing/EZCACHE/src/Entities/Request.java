@@ -81,7 +81,7 @@ public class Request implements Comparable<Request> {
 	public void setVideo(Video video) {
 		this.video = video;
 	}*/
-	public int getScore(Cache cache){
+	public int getSimpleScore(Cache cache){
 		if (!endPoint.containsCache(cache)){
 			return -1;
 		}
@@ -90,12 +90,39 @@ public class Request implements Comparable<Request> {
 			for (EndPoint endpoint: cache.getEndpoints()){
 				Request request = endpoint.getRequestForVideo(video);
 				if (request!=null){
-					score += (endpoint.getDataCenterLatency() - endpoint.getLatency(cache))*request.demand;
+					score += (endpoint.getDataCenterLatency() - endpoint.getLatency(cache))*request.getDemand();
 				}
 			}
 			return score;
 		}
 		
+	}
+	
+	public int getGainedScore(Cache cache){
+		if (!endPoint.containsCache(cache)){
+			return -1;
+		}
+		else{
+			int score = 0;
+			for (EndPoint endpoint: cache.getEndpoints()){
+				Request request = endpoint.getRequestForVideo(video);
+				if (request!=null){
+					boolean alreadyPresent = false;
+					for (Cache usedCache : endpoint.getCacheList()){
+						/*if (usedCache.equals(cache))
+							continue;*/
+						if (usedCache.getVideos().contains(video)){
+							alreadyPresent = true;
+							break;
+						}
+					}
+					if (!alreadyPresent){
+						score += (endpoint.getDataCenterLatency() - endpoint.getLatency(cache))*request.getDemand();
+					}
+				}
+			}
+			return score;
+		}
 	}
 
 	public int getDemand() {

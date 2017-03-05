@@ -83,6 +83,16 @@ public class Cache {
 		
 	}
 
+
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + id;
+		return result;
+	}
+
 	public boolean equals(Object o) {
 		if (o == null)
 			return false;
@@ -92,7 +102,6 @@ public class Cache {
 		Cache c = (Cache) o;
 		return this.id == c.getId();
 	}
-
 	public String toString() {
 		return String.format("id: %d, # of vids: %d", id, videos.size());
 	}

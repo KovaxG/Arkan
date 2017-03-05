@@ -11,7 +11,6 @@ public class Video {
 		super();
 		this.id = video.id;
 		this.size = video.size;
-		this.score = 0;
 	}
 
 	public Video() {
@@ -38,9 +37,51 @@ public class Video {
 		this.size = size;
 	}
 
-	public int getScore() {
-		return score;
+	public int getSimpleScore(Cache cache){
+		if (!cache.getVideos().contains(this)){
+			return -1;
+		}
+		else{
+			int score = 0;
+			for (EndPoint endpoint: cache.getEndpoints()){
+				Request request = endpoint.getRequestForVideo(this);
+				if (request!=null){
+					score += (endpoint.getDataCenterLatency() - endpoint.getLatency(cache))*request.getDemand();
+				}
+			}
+			return score;
+		}
+		
 	}
+	
+	
+	public  int getGainedScore(Cache cache) {
+		if (!cache.getVideos().contains(this)){
+			return -1;
+		}
+		else{
+			int score = 0;
+			for (EndPoint endpoint: cache.getEndpoints()){
+				Request request = endpoint.getRequestForVideo(this);
+				if (request!=null){
+					boolean alreadyPresent = false;
+					for (Cache usedCache : endpoint.getCacheList()){
+						/*if (usedCache.equals(cache))
+							continue;*/
+						if (usedCache.getVideos().contains(this)){
+							alreadyPresent = true;
+							break;
+						}
+					}
+					if (!alreadyPresent){
+						score += (endpoint.getDataCenterLatency() - endpoint.getLatency(cache))*request.getDemand();
+					}
+				}
+			}
+			return score;
+		}
+	}
+	
 
 	public void setScore(int score) {
 		this.score = score;

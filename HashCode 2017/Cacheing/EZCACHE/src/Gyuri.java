@@ -3,14 +3,18 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.RandomAccessFile;
+import java.lang.reflect.Array;
 import java.nio.file.DirectoryStream.Filter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.xml.bind.ValidationEvent;
 
 import Entities.Cache;
 import Entities.EndPoint;
@@ -23,7 +27,7 @@ import Entities.Video;
 public class Gyuri {
 	public static void main(String args[]) {
 
-		String[] files = { "example", "me_at_the_zoo", /*"trending_today",*/ "videos_worth_spreading", /*"kittens"*/ };
+		String[] files = { /*"example", */"me_at_the_zoo", "trending_today", "videos_worth_spreading"/*, "kittens" */};
 		String logFile = "log.txt";
 
 		ArrayList<Result> results = new ArrayList<Result>();
@@ -42,8 +46,8 @@ public class Gyuri {
 
 			Thread sorthread = new Thread(new Runnable() {
 				public void run() {
-					gyuri.alternativeSort(robert, file);
 					//robert.sort();
+					gyuri.sort(robert, file);
 				}
 			});
 
@@ -288,32 +292,73 @@ public class Gyuri {
 
 		// Sort the list using the demand field
 		Collections.sort(allRequests, (o1, o2) -> o1.compareTo(o2));
-
+		Collections.sort(allRequests);
+		
 		System.out.println(file + ": This will take forever");
 
 		// Go through all requests
-		ProgressMeter progress = new ProgressMeter(allRequests.size(), file,true );
+		ProgressMeter progress = new ProgressMeter(allRequests.size(), file );
 		ArrayList<Pair<EndPoint, Video>> toIgnore = new ArrayList<Pair<EndPoint, Video>> ();
 		for (Request r : allRequests) {
+			progress.increment();
 			if (toIgnore.contains(new Pair<EndPoint,Video>(r.getEndPoint(),r.getVideo()))){
 				continue;
 			}
-			progress.increment();
 			Cache cache;
 			for (int i=0;i<r.getEndPoint().getCacheCount();i++){
 				cache = r.getEndPoint().getCache(i);
 					///if video is successfully added, breaks i.e. adds it to the 
 					//cache with lowest latency that has free space
 					if (cache.addVideo(r.getVideo())){
-						for (EndPoint endPoint:robert.endpoints){
-							if (endPoint.containsCache(cache)){
-								toIgnore.add(new Pair<EndPoint, Video>(endPoint, r.getVideo()));
-							}
+						//Video video = cache.getVideos().get(cache.getVideos().size()-1);
+						//video.setScore(0);
+						for (EndPoint endPoint:cache.getEndpoints()){
+							toIgnore.add(new Pair<EndPoint, Video>(endPoint, r.getVideo()));
+							//video.setScore(video.getScore() + (endPoint.getDataCenterLatency()-endPoint.getLatency(cache))*r.getDemand());
 						}
 						break;
 					}
+					///this is not always optimal
+					/*else{
+						if (!cache.getVideos().contains(r.getVideo())){
+							ArrayList<Video> CachedVideos = new ArrayList<Video>();
+							for (Video video : cache.getVideos()){
+								CachedVideos.add(video);
+							}
+							for (Video video : CachedVideos){
+								int potentialScore = 0;
+								for (EndPoint endPoint:cache.getEndpoints()){
+									if (!endPoint.getRequestList().stream().filter(rt -> rt.getVideo().equals(r.getVideo())).findAny().equals(Optional.empty())){
+										potentialScore += (endPoint.getDataCenterLatency()-endPoint.getLatency(cache)
+												*endPoint.getRequestList().stream().filter(rt-> rt.getVideo().equals(r.getVideo())).findFirst().get().getDemand());
+									}
+								}
+								if (potentialScore > video.getScore() && r.getVideo().getSize()<=video.getSize()){
+									cache.removeVideo(video);
+									cache.addVideo(r.getVideo());
+								}
+							}
+						}
+					}*/
 			}
 		}
+		
+		/*for (Request request : allRequests){
+			boolean skip = false;
+			for (Cache cache : request.getEndPoint().getCacheList()){
+				if(cache.getVideos().contains(request.getVideo())){
+					skip = true;
+					break;
+				}
+			}
+			if (!skip){
+				for (Cache cache : request.getEndPoint().getCacheList()){
+					for (Video video : cache.getVideos()){
+						if (video.)
+					}
+				}
+			}
+		}*/
 	} // End of sort
 	
 	public void alternativeSort(Robert robert, String file) {

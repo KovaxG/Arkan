@@ -317,8 +317,8 @@ public class Robert {
 			// TODO write code for replacing already inserted videos, for a
 			// better combination
 			for (VideosWithScore vScore : videosWithScores) {
-				if (vScore.getVideo().getSize() < cache.getSize() && !cache.getVideos().contains(vScore.getVideo())) {
-					cache.getVideos().add(vScore.getVideo());
+				if (cache.addVideo(vScore.getVideo())) {
+					
 					// addedThisIteration++;
 					for (int i = 0; i < endpointCount; i++) {
 

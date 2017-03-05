@@ -1,7 +1,5 @@
 package Entities;
 
-import org.omg.CORBA.ORBPackage.InconsistentTypeCode;
-
 public class Request implements Comparable<Request> {
 
 	private final int id;
@@ -83,6 +81,22 @@ public class Request implements Comparable<Request> {
 	public void setVideo(Video video) {
 		this.video = video;
 	}*/
+	public int getScore(Cache cache){
+		if (!endPoint.containsCache(cache)){
+			return -1;
+		}
+		else{
+			int score = 0;
+			for (EndPoint endpoint: cache.getEndpoints()){
+				Request request = endpoint.getRequestForVideo(video);
+				if (request!=null){
+					score += (endpoint.getDataCenterLatency() - endpoint.getLatency(cache))*request.demand;
+				}
+			}
+			return score;
+		}
+		
+	}
 
 	public int getDemand() {
 		return demand;
